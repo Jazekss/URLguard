@@ -11,7 +11,7 @@ URLguard ir veidots tā, lai **nekas par jums nepamestu jūsu datoru**, ja vien 
 
 ## Ko URLguard lejupielādē
 
-- **Krāpnieku saišu bāzi** no GitHub/jsDelivr ik pēc 6 stundām. Tā ir viena un tā pati visiem lietotājiem – pēc tās nevar noteikt, ko jūs apmeklējat.
+- **Krāpnieku saišu bāzi** no mūsu releja (rezerve – GitHub/jsDelivr) ik pēc 6 stundām. Tā ir viena un tā pati visiem lietotājiem – pēc tās nevar noteikt, ko jūs apmeklējat.
 
 ## Ko URLguard nosūta – tikai ar jūsu darbību vai piekrišanu
 

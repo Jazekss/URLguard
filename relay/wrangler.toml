@@ -1,11 +1,14 @@
 name = "urlguard-relay"
 main = "src/worker.ts"
 compatibility_date = "2026-11-01"
+account_id = "3eee48e81862dc8ad031eb2b92f91275"
 
 [vars]
 GITHUB_REPO = "Jazekss/URLguard"
 MAX_REPORTS_PER_HOUR = "10"
 MAX_STATS_PER_DAY = "20"
+# Bāzes paraksta pārbaudei (tā pati, kas data/keys/public.b64)
+BUNDLE_PUBKEY = "nRRtJadpeSPZXWGFN75tZFk25S3mttb+xs/qpJQz/Vk="
 
 # Slepenais tokens (nekad failā!):  node scripts/wrangler.mjs secret put GITHUB_TOKEN
 

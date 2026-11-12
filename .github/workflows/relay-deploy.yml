@@ -1,0 +1,33 @@
+# Publicē releju (Cloudflare Worker) pēc izmaiņām relay/ mapē. Cloudflare tokens glabājas tikai GitHub Secret.
+name: Publicēt releju
+on:
+  push:
+    branches: [main]
+    paths: ['relay/**', '.github/workflows/relay-deploy.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: relay-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with: { version: 12 }
+      - uses: actions/setup-node@v5
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --filter ./relay
+      - name: Datubāzes shēma (idempotenta)
+        working-directory: relay
+        run: pnpm exec wrangler d1 execute urlguard-stats --remote --file=schema.sql
+      - name: Publicēt
+        working-directory: relay
+        run: pnpm exec wrangler deploy
+      - name: Pārbaude
+        run: curl -fsS https://urlguard-relay.urlguard-relay.workers.dev/stats > /dev/null && echo "relejs atbild ✓"

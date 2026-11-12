@@ -21,3 +21,13 @@ CREATE TABLE IF NOT EXISTS ratelimit (
   n INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (day, key)
 );
+
+-- Parakstītā krāpnieku bāze, ko izplata /bundle.json (+ .sig).
+-- Relejs pieņem tikai bāzi ar derīgu Ed25519 parakstu un jaunāku "generated" datumu.
+CREATE TABLE IF NOT EXISTS bundle (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  generated TEXT NOT NULL,
+  body TEXT NOT NULL,
+  sig TEXT NOT NULL,
+  updated TEXT NOT NULL
+);

@@ -2,6 +2,8 @@
 //   POST /report – lietotāja ziņojums -> GitHub issue (lietotājam nevajag GitHub kontu)
 //   POST /stats  – anonīmas dienas kopsummas (tikai ar lietotāja piekrišanu, tikai skaitļi)
 //   GET  /stats  – publiskā statistika (JSON)
+//   GET  /bundle.json, /bundle.json.sig – parakstītā krāpnieku bāze paplašinājumiem
+//   POST /bundle – jaunas bāzes augšupielāde (pieņem TIKAI ar derīgu Ed25519 parakstu un jaunāku datumu)
 // Privātums: IP adrese netiek glabāta. Pret ļaunprātīgu lietošanu glabājam tikai hash(IP + dienas sāls);
 // sāli un hash dzēšam pēc 2 dienām – pēc tam tos nav iespējams sasaistīt ar IP.
 
@@ -11,6 +13,7 @@ interface Env {
   DB: D1Database;
   MAX_REPORTS_PER_HOUR?: string;
   MAX_STATS_PER_DAY?: string;
+  BUNDLE_PUBKEY: string; // Ed25519 publiskā atslēga (base64), tā pati, kas paplašinājumā
 }
 
 interface D1Result<T> {
@@ -208,6 +211,71 @@ async function getStats(env: Env, origin: string | null): Promise<Response> {
   return json({ total, last30: days.results, generated: new Date().toISOString() }, 200, origin, { 'cache-control': 'public, max-age=600' }, true);
 }
 
+// ---------------------------------------------------------------- /bundle
+const MAX_BUNDLE_BYTES = 1_900_000; // D1 rindas ierobežojums ~2 MB
+
+function b64(s: string): Uint8Array {
+  const bin = atob(s.trim());
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function verifySig(env: Env, body: string, sig: string): Promise<boolean> {
+  try {
+    const key = await crypto.subtle.importKey('raw', b64(env.BUNDLE_PUBKEY), { name: 'Ed25519' }, false, ['verify']);
+    return await crypto.subtle.verify({ name: 'Ed25519' }, key, b64(sig), new TextEncoder().encode(body));
+  } catch {
+    return false;
+  }
+}
+
+/** Augšupielāde no GitHub Actions. Autentifikācija = paraksts: bez privātās atslēgas derīgu bāzi izveidot nevar. */
+async function putBundle(req: Request, env: Env, origin: string | null): Promise<Response> {
+  let payload: { body?: string; sig?: string };
+  try {
+    payload = await req.json();
+  } catch {
+    return json({ error: 'bad json' }, 400, origin);
+  }
+  const body = String(payload.body ?? '');
+  const sig = String(payload.sig ?? '');
+  if (!body || !sig || body.length > MAX_BUNDLE_BYTES) return json({ error: 'bad bundle' }, 400, origin);
+  if (!(await verifySig(env, body, sig))) return json({ error: 'bad signature' }, 403, origin);
+  let generated: string;
+  try {
+    const b = JSON.parse(body) as { version?: number; generated?: string };
+    if (b.version !== 1 || !b.generated || Number.isNaN(Date.parse(b.generated))) throw new Error();
+    generated = b.generated;
+  } catch {
+    return json({ error: 'bad bundle json' }, 400, origin);
+  }
+  const cur = await env.DB.prepare('SELECT generated FROM bundle WHERE id = 1').first<{ generated: string }>();
+  if (cur && Date.parse(generated) <= Date.parse(cur.generated)) {
+    return json({ ok: true, unchanged: true, generated: cur.generated }, 200, origin);
+  }
+  await env.DB.prepare(
+    `INSERT INTO bundle (id, generated, body, sig, updated) VALUES (1, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET generated = excluded.generated, body = excluded.body, sig = excluded.sig, updated = excluded.updated`,
+  )
+    .bind(generated, body, sig, new Date().toISOString())
+    .run();
+  return json({ ok: true, generated }, 201, origin);
+}
+
+async function getBundle(env: Env, sigOnly: boolean): Promise<Response> {
+  const row = await env.DB.prepare('SELECT generated, body, sig FROM bundle WHERE id = 1').first<{ generated: string; body: string; sig: string }>();
+  if (!row) return new Response('not found', { status: 404, headers: { 'access-control-allow-origin': '*' } });
+  return new Response(sigOnly ? row.sig : row.body, {
+    headers: {
+      'content-type': sigOnly ? 'text/plain; charset=utf-8' : 'application/json; charset=utf-8',
+      'cache-control': 'public, max-age=900',
+      'access-control-allow-origin': '*',
+      'x-bundle-generated': row.generated,
+    },
+  });
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const origin = req.headers.get('origin');
@@ -217,6 +285,9 @@ export default {
       if (req.method === 'POST' && path === '/report') return await report(req, env, origin);
       if (req.method === 'POST' && path === '/stats') return await postStats(req, env, origin);
       if (req.method === 'GET' && path === '/stats') return await getStats(env, origin);
+      if (req.method === 'GET' && path === '/bundle.json') return await getBundle(env, false);
+      if (req.method === 'GET' && path === '/bundle.json.sig') return await getBundle(env, true);
+      if (req.method === 'POST' && path === '/bundle') return await putBundle(req, env, origin);
     } catch (e) {
       console.error(e);
       return json({ error: 'server error' }, 500, origin);

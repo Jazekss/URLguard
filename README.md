@@ -36,7 +36,7 @@ relay/       Cloudflare Worker anonīmiem ziņojumiem (nav obligāts)
 2. Paplašinājums nosūta ziņojumu releju serverim (`relay/`, Cloudflare Worker). Relejs izveido GitHub issue, tāpēc lietotājam GitHub konts nav vajadzīgs. Ja relejs nav pieejams, paplašinājums atver aizpildītu GitHub formu.
 3. `report-triage.yml` automātiski pievieno komentāru ar DNS, domēna vecumu (RDAP), informāciju, vai domēns jau ir sarakstā vai ir oficiāls, un, vai tajā ir zīmola nosaukums. Pievieno arī etiķetes.
 4. Uzturētājs uzliek etiķeti **`approved`**. Tad `report-apply.yml` ieraksta saiti sarakstā, izveido commit, aizver issue un palaiž publicēšanu.
-5. `data-publish.yml` uzbūvē bāzi (un pievieno OpenPhish plūsmu), **paraksta ar Ed25519** un publicē zarā `dist`. Paplašinājumi to lejupielādē ik pēc 6 h caur jsDelivr un pieņem tikai ar derīgu parakstu.
+5. `data-publish.yml` uzbūvē bāzi (un pievieno OpenPhish plūsmu), **paraksta ar Ed25519** un publicē relejā (un zarā `dist`). Paplašinājumi to lejupielādē ik pēc 6 h un pieņem tikai ar derīgu parakstu.
 
 ## Statistika un privātums
 
@@ -46,10 +46,11 @@ Statistiku sūta tikai tad, ja lietotājs piekrīt. Reizi dienā tiek nosūtīti
 
 | | |
 |---|---|
-| Adrese | `https://urlguard-relay.urlguard-relay.workers.dev` (`/report`, `/stats`) |
+| Adrese | `https://urlguard-relay.urlguard-relay.workers.dev` (`/report`, `/stats`, `/bundle.json`) |
+| Bāze | `POST /bundle` pieņem tikai bāzi ar derīgu Ed25519 parakstu un jaunāku datumu (augšupielādē `data-publish.yml`) |
 | Glabātuve | Cloudflare D1 `urlguard-stats` (shēma `relay/schema.sql`) |
 | Secret | `GITHUB_TOKEN`: fine-grained, tikai "Issues: Read and write" šim repozitorijam |
-| Publicēšana | `cd relay && node scripts/wrangler.mjs deploy` |
+| Publicēšana | automātiski ar `relay-deploy.yml` (Secret `CLOUDFLARE_API_TOKEN`), lokāli: `cd relay && node scripts/wrangler.mjs deploy` |
 | Tokena maiņa | `node scripts/wrangler.mjs secret put GITHUB_TOKEN` |
 
 `scripts/wrangler.mjs` glabā Cloudflare pieslēgšanās datus mapē `F:\Projects\_deps\wrangler\config`.

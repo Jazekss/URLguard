@@ -1,5 +1,5 @@
 # Katru dienu (un pēc katras izmaiņas data/) uzbūvē un paraksta bāzi, publicē zarā "dist".
-# Paplašinājumi to lejupielādē no jsDelivr: https://cdn.jsdelivr.net/gh/<repo>@dist/bundle.json
+# Paplašinājumi to lejupielādē no releja (…workers.dev/bundle.json); jsDelivr (zars dist) – rezerve, kad repo būs publisks.
 name: Publicēt bāzi
 on:
   push:
@@ -39,6 +39,8 @@ jobs:
           git add -A
           git commit -qm "bundle $(date -u +%Y-%m-%dT%H:%MZ)"
           git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" dist
+      - name: Publicēt relejā (Cloudflare)
+        run: node data/scripts/upload-bundle.mjs data/dist
       - name: Iztīrīt jsDelivr kešatmiņu
         run: |
           for f in bundle.json bundle.json.sig meta.json; do
