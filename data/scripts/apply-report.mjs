@@ -8,7 +8,7 @@ import {
 } from './lib.mjs';
 
 const num = process.env.ISSUE_NUMBER ?? '?';
-const r = parseIssue(process.env.ISSUE_BODY ?? '');
+const r = parseIssue(process.env.ISSUE_BODY ?? '', process.env.ISSUE_TITLE ?? '');
 const fail = (m) => {
   writeFileSync('apply-result.md', `❌ ${m}`);
   console.error(m);

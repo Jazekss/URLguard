@@ -84,7 +84,7 @@ export function hostIn(set, host) {
 }
 
 /** Izvelk laukus no GitHub issue formas ("### Virsraksts\n\nvērtība"). */
-export function parseIssue(body = '') {
+export function parseIssue(body = '', title = '') {
   const sections = {};
   const parts = body.split(/^###\s+/m).slice(1);
   for (const p of parts) {
@@ -96,7 +96,9 @@ export function parseIssue(body = '') {
   const urlField = sections['Saite'] ?? '';
   const m = urlField.match(/https?:\/\/[^\s<>"'`)]+/i);
   const kindRaw = sections['Veids'] ?? '';
-  const kind = /phishing|krāpniec/i.test(kindRaw) ? 'phishing' : /kļūdain|droša|false/i.test(kindRaw) ? 'false_positive' : null;
+  let kind = /phishing|krāpniec/i.test(kindRaw) ? 'phishing' : /kļūdain|droša|false/i.test(kindRaw) ? 'false_positive' : null;
+  // Rezerves variants: virsraksts "[phishing] host" / "[fp] host"
+  if (!kind) kind = /^\s*\[phishing\]/i.test(title) ? 'phishing' : /^\s*\[fp\]/i.test(title) ? 'false_positive' : null;
   return {
     url: m ? m[0] : null,
     kind,

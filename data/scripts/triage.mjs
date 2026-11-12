@@ -5,7 +5,7 @@ import { promises as dns } from 'node:dns';
 import { writeFileSync } from 'node:fs';
 import { hostIn, isShared, parseIssue, readBrands, readList, registrable } from './lib.mjs';
 
-const r = parseIssue(process.env.ISSUE_BODY ?? '');
+const r = parseIssue(process.env.ISSUE_BODY ?? '', process.env.ISSUE_TITLE ?? '');
 const labels = new Set();
 const rows = [];
 const notes = [];

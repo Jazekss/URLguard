@@ -20,6 +20,7 @@ jobs:
       - name: Pārbaudīt
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
         run: node data/scripts/triage.mjs
       - name: Komentārs un etiķetes
         env:
