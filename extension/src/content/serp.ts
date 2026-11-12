@@ -26,8 +26,8 @@ function marker(kind: MarkKind, tip: string): HTMLElement {
   host.setAttribute('role', 'img');
   host.setAttribute('aria-label', tip);
   host.style.cssText =
-    'all:initial;display:inline-block;width:0.95em;height:0.95em;min-width:15px;min-height:15px;margin:0 0.35em 0 0;' +
-    'vertical-align:-0.12em;transform:none;cursor:help;line-height:0;';
+    'all:initial;font-size:inherit;display:inline-block;width:0.9em;height:0.9em;min-width:14px;min-height:14px;margin:0 0.35em 0 0;' +
+    'vertical-align:-0.1em;transform:none;cursor:help;line-height:0;';
   const root = host.attachShadow({ mode: 'closed' });
   const { color, glyph } = MARK[kind];
   root.innerHTML = `<svg viewBox="0 0 20 20" width="100%" height="100%" aria-hidden="true" style="display:block">
