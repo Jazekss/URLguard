@@ -20,6 +20,7 @@
     "happy-dom": "^21.0.4",
     "puppeteer-core": "^25.17.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "web-ext": "^10.8.0"
   }
 }

@@ -47,8 +47,8 @@ function manifest(target) {
   } else {
     m.background = { scripts: ['background.js'] };
     m.browser_specific_settings = {
-      gecko: { id: 'urlguard@urlguard.app', strict_min_version: '128.0', data_collection_permissions: { required: ['none'], optional: ['technicalAndInteraction'] } },
-      gecko_android: { strict_min_version: '128.0' },
+      gecko: { id: 'urlguard@urlguard.app', strict_min_version: '140.0', data_collection_permissions: { required: ['none'], optional: ['technicalAndInteraction'] } },
+      gecko_android: { strict_min_version: '142.0' },
     };
   }
   return m;
@@ -105,8 +105,8 @@ for (const target of ['chrome', 'firefox']) {
     outdir: out,
     bundle: true,
     format: 'iife',
-    target: ['chrome120', 'firefox128'],
-    minify: !dev,
+    target: ['chrome120', 'firefox140'],
+    minify: !dev && target === 'chrome', // Firefox (AMO) – neminificēts, lai pārbaudītāji var lasīt kodu
     sourcemap: dev ? 'inline' : false,
     legalComments: 'none',
     define: { __PUBKEY__: JSON.stringify(PUBKEY), __DATA_REPO__: JSON.stringify(REPO), __TARGET__: JSON.stringify(target) },

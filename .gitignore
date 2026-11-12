@@ -16,3 +16,4 @@ extension/test/popup.png
 **/.wrangler/
 relay/Projects_*/
 extension/test/serp.png
+extension/test/ff-*.png

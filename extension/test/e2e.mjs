@@ -1,24 +1,46 @@
-// End-to-end tests: ielādē dist/chrome paplašinājumu Brave/Chrome (headless) un pārbauda galvenos scenārijus.
-//   node build.mjs --dev --local-data && node test/e2e.mjs   (--local-data: iebūvē lokālo bāzi ar datumu 1970, lai pārbaudītu atjaunināšanu)
-// Pārlūks: env BROWSER_PATH vai Brave lokālajā instalācijā.
+// End-to-end tests: ielādē paplašinājumu pārlūkā (headless) un pārbauda galvenos scenārijus.
+//   node build.mjs --dev --local-data && node test/e2e.mjs            (Chromium: Brave/Chrome)
+//   node build.mjs --dev --local-data && node test/e2e.mjs firefox    (Firefox no F:\Projects\_depsirefox)
+// --local-data: iebūvē lokālo bāzi ar datumu 1970, lai pārbaudītu atjaunināšanu no releja.
+// Pārlūks: env BROWSER_PATH (citādi Brave vai _deps Firefox).
 import puppeteer from 'puppeteer-core';
-import { existsSync, rmSync } from 'node:fs';
+import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-const EXT = resolve('dist/chrome');
+const FF = process.argv[2] === 'firefox';
+const EXT = resolve(FF ? 'dist/firefox' : 'dist/chrome');
+const FF_DIR = 'F:/Projects/_deps/firefox/firefox';
 const BROWSER =
-  process.env.BROWSER_PATH ?? join(process.env.LOCALAPPDATA ?? '', 'BraveSoftware/Brave-Browser/Application/brave.exe');
+  process.env.BROWSER_PATH ??
+  (FF
+    ? join(FF_DIR, readdirSync(FF_DIR).sort().pop() ?? '', 'core', 'firefox.exe')
+    : join(process.env.LOCALAPPDATA ?? '', 'BraveSoftware/Brave-Browser/Application/brave.exe'));
 const PROFILE = resolve('.e2e-profile');
 if (!existsSync(BROWSER)) throw new Error(`Pārlūks nav atrasts: ${BROWSER}`);
 rmSync(PROFILE, { recursive: true, force: true });
 
-const browser = await puppeteer.launch({
-  executablePath: BROWSER,
-  headless: process.env.HEADFUL ? false : true,
-  userDataDir: PROFILE,
-  enableExtensions: [EXT],
-  args: ['--no-first-run', '--no-default-browser-check'],
-});
+// Firefox: fiksēts paplašinājuma UUID, lai zinām moz-extension:// adresi
+const FF_UUID = '6f1b9a52-3c1e-4d8a-9b7e-1a2b3c4d5e6f';
+const browser = FF
+  ? await puppeteer.launch({
+      browser: 'firefox',
+      executablePath: BROWSER,
+      // Ļauj automatizācijai redzēt paplašinājuma lapas (moz-extension://)
+      env: { ...process.env, MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: '1' },
+      headless: process.env.HEADFUL ? false : true,
+      extraPrefsFirefox: {
+        'extensions.webextensions.uuids': JSON.stringify({ 'urlguard@urlguard.app': FF_UUID }),
+        'xpinstall.signatures.required': false,
+      },
+    })
+  : await puppeteer.launch({
+      executablePath: BROWSER,
+      headless: process.env.HEADFUL ? false : true,
+      userDataDir: PROFILE,
+      enableExtensions: [EXT],
+      args: ['--no-first-run', '--no-default-browser-check'],
+    });
+console.log(`Pārlūks: ${await browser.version()}`);
 
 let failed = 0;
 const ok = (name, cond, extra = '') => {
@@ -54,33 +76,50 @@ async function newPage() {
   return page;
 }
 
+/** Faktiskā adrese: Firefox BiDi pēc paplašinājuma pāradresācijas page.url() var nerādīt – nolasām lapā. */
+async function currentUrl(page) {
+  const u = await page.evaluate(() => location.href).catch(() => null);
+  return u && u !== 'about:blank' ? u : page.url();
+}
+
 async function waitForUrl(page, pred, ms = 6000) {
   const end = Date.now() + ms;
   while (Date.now() < end) {
-    if (pred(page.url())) return true;
+    if (pred(await currentUrl(page))) return true;
     await sleep(150);
   }
   return false;
 }
 
 try {
-  const sw = await browser.waitForTarget((t) => t.type() === 'service_worker' && t.url().startsWith('chrome-extension://'), {
-    timeout: 15000,
-  });
-  const extId = new URL(sw.url()).hostname;
+  let BASE;
+  if (FF) {
+    await browser.installExtension(EXT);
+    BASE = `moz-extension://${FF_UUID}`;
+  } else {
+    const sw = await browser.waitForTarget((t) => t.type() === 'service_worker' && t.url().startsWith('chrome-extension://'), {
+      timeout: 15000,
+    });
+    BASE = `chrome-extension://${new URL(sw.url()).hostname}`;
+  }
+  const extId = BASE;
   ok('paplašinājums ielādēts', !!extId, extId);
   await sleep(1500); // DNR noteikumi + dzinējs
 
   // 0) Statistikas piekrišana: jautā vienreiz; līdz piekrišanai nekas netiek skaitīts
   {
     const page = await browser.newPage();
-    await page.goto(`chrome-extension://${extId}/popup.html`);
+    await page.goto(`${BASE}/popup.html`, { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(() => {});
     await page.waitForSelector('#consent:not([hidden])', { timeout: 4000 }).catch(() => {});
     ok('statistikas jautājums parādās', await page.$eval('#consent', (e) => !e.hidden).catch(() => false));
     await page.click('#consentYes');
     await sleep(300);
     const s = await page.evaluate(() => chrome.storage.sync.get('settings'));
-    ok('piekrišana saglabāta', s.settings?.shareStats === true);
+    if (FF) {
+      // Firefox parāda savu datu vākšanas apstiprinājuma logu – headless to nevar apstiprināt; iestatām tieši
+      console.log('– Firefox: piekrišanu apstiprina pārlūka logs (pārbaudīt ar roku); testā iestata tieši');
+      await page.evaluate(() => chrome.storage.sync.set({ settings: { shareStats: true } }));
+    } else ok('piekrišana saglabāta', s.settings?.shareStats === true);
     await page.close();
   }
 
@@ -88,8 +127,8 @@ try {
   {
     const page = await newPage();
     page.goto('http://phishing-test.urlguard.invalid/login').catch(() => {});
-    const hit = await waitForUrl(page, (u) => u.startsWith(`chrome-extension://${extId}/warning.html`));
-    ok('bloķēto saraksts (DNR) -> brīdinājums', hit, page.url().slice(0, 90));
+    const hit = await waitForUrl(page, (u) => u.startsWith(`${BASE}/warning.html`));
+    ok('bloķēto saraksts (DNR) -> brīdinājums', hit, (await currentUrl(page)).slice(0, 90));
     if (hit) {
       await page.waitForSelector('#reasons li', { timeout: 4000 }).catch(() => {});
       const txt = await page.$eval('#reasons', (e) => e.textContent).catch(() => '');
@@ -103,7 +142,7 @@ try {
     const page = await newPage();
     page.goto('https://eveseliba.lv.pieteikums-portal.com/login').catch(() => {});
     const hit = await waitForUrl(page, (u) => u.includes('/warning.html?id='));
-    ok('viltots e-veselības domēns -> brīdinājums', hit, page.url().slice(0, 90));
+    ok('viltots e-veselības domēns -> brīdinājums', hit, (await currentUrl(page)).slice(0, 90));
     if (hit) {
       await page.waitForSelector('#officialLink', { visible: true, timeout: 4000 }).catch(() => {});
       const href = await page.$eval('#officialLink', (a) => a.href).catch(() => '');
@@ -154,7 +193,7 @@ try {
     const page = await newPage();
     await page.goto('https://lmt-bonuss.com/', { waitUntil: 'domcontentloaded' });
     const hit = await waitForUrl(page, (u) => u.includes('/warning.html?id='), 8000);
-    ok('pieslēgšanās forma uz viltota domēna -> brīdinājums', hit, page.url().slice(0, 80));
+    ok('pieslēgšanās forma uz viltota domēna -> brīdinājums', hit, (await currentUrl(page)).slice(0, 80));
     await page.close();
   }
 
@@ -171,7 +210,7 @@ try {
   // 7) Popup ar konkrētu saiti
   {
     const page = await browser.newPage();
-    await page.goto(`chrome-extension://${extId}/popup.html?u=${encodeURIComponent('https://swedbank.top/ib')}`);
+    await page.goto(`${BASE}/popup.html?u=${encodeURIComponent('https://swedbank.top/ib')}`, { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(() => {});
     await page.waitForFunction(() => document.getElementById('verdict')?.textContent !== '…', { timeout: 5000 });
     const v = await page.$eval('#verdict', (e) => e.textContent);
     const log = await page.$$eval('#log li', (els) => els.length);
