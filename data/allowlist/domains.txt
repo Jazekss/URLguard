@@ -24,3 +24,4 @@ stripe.com
 citadel.com
 translate.goog
 eveseliba.lv  # #5
+eveselibaspunkts.lv  # #6
