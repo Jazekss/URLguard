@@ -1,0 +1,18 @@
+# Vienreiz palaid (Actions -> Izveidot etiķetes -> Run workflow), lai izveidotu ziņojumu etiķetes.
+name: Izveidot etiķetes
+on: workflow_dispatch
+permissions:
+  issues: write
+jobs:
+  labels:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mk() { gh label create "$1" --repo "$GITHUB_REPOSITORY" --color "$2" --description "$3" --force; }
+          mk report         "0E8A16" "Lietotāja ziņojums no URLguard"
+          mk approved       "1D76DB" "Apstiprināts – pievienot bāzei"
+          mk phishing       "B60205" "Krāpnieciska saite"
+          mk false-positive "FBCA04" "Kļūdains brīdinājums"
+          mk invalid        "E4E669" "Nederīgs ziņojums"
