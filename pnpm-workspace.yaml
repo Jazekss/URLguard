@@ -1,0 +1,6 @@
+packages:
+  - extension
+  - data
+
+allowBuilds:
+  esbuild: true

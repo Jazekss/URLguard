@@ -1,0 +1,36 @@
+name: Ziņot par saiti
+description: Krāpnieciska saite vai kļūdains URLguard brīdinājums
+title: "[report] "
+labels: ["report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Paldies! Saiti automātiski pārbaudīs, un pēc uzturētāja apstiprinājuma tā nonāks bāzē visiem lietotājiem.
+        **Neievietojiet personīgus datus** (e-pastu, personas kodu, pieteikšanās saites ar žetoniem).
+  - type: input
+    id: url
+    attributes:
+      label: Saite
+      placeholder: https://...
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Veids
+      options:
+        - Krāpnieciska saite (phishing)
+        - Kļūdains brīdinājums (lapa ir droša)
+    validations:
+      required: true
+  - type: input
+    id: brand
+    attributes:
+      label: Zīmols (ja zināms)
+      placeholder: piem. Swedbank, E-veselība, Latvijas Pasts
+  - type: textarea
+    id: note
+    attributes:
+      label: Piezīme
+      placeholder: Kur saiti redzējāt? (SMS, e-pasts, Google reklāma…)

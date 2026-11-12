@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="lv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URLguard</title>
+  <link rel="stylesheet" href="ui.css">
+  <style>
+    body { width: 380px; min-height: 200px; }
+    body.window { width: auto; }
+    header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--surface); border-bottom: 1px solid var(--border); }
+    header img { width: 26px; height: 26px; }
+    header h1 { font-size: 16px; margin: 0; flex: 1; }
+    .switch { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; }
+    main { padding: 12px 14px 16px; display: grid; gap: 12px; }
+    .status { border-left: 4px solid var(--c); background: var(--cb); }
+    .status .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .status .host { font-weight: 600; margin: 4px 0; word-break: break-all; }
+    .status ul { margin: 6px 0 0; padding-left: 18px; }
+    .status li { margin: 2px 0; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat { text-align: center; padding: 10px; }
+    .stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+    h2 { font-size: 13px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+    .log { list-style: none; margin: 0; padding: 0; max-height: 180px; overflow: auto; }
+    .log li { display: flex; gap: 8px; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .log li:last-child { border-bottom: 0; }
+    .log .h { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    form { display: grid; gap: 8px; }
+    label.row { display: flex; gap: 8px; align-items: flex-start; }
+    textarea, select, input[type=text], input[type=url] { width: 100%; border: 1px solid var(--border); background: var(--bg); border-radius: 8px; padding: 6px 8px; }
+    textarea { min-height: 54px; resize: vertical; }
+    .msg { font-size: 13px; padding: 8px 10px; border-radius: 8px; }
+    .msg.ok { background: var(--ok-bg); color: var(--ok); }
+    .msg.err { background: var(--danger-bg); color: var(--danger); }
+    details summary { cursor: pointer; font-weight: 600; }
+    .settings { display: grid; gap: 8px; margin-top: 10px; }
+    .footer { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="icons/icon48.png" alt="">
+    <h1>URLguard</h1>
+    <label class="switch"><input type="checkbox" id="enabled"> Aizsardzība</label>
+  </header>
+  <main>
+    <section class="card status v-unknown" id="status">
+      <div class="head"><span class="pill" id="verdict">…</span><span class="muted small" id="statusSrc">Šī lapa</span></div>
+      <div class="host" id="host"></div>
+      <ul id="reasons"></ul>
+      <div id="officialBox" class="small" hidden>Oficiālā adrese: <a id="officialLink" target="_blank" rel="noopener"></a></div>
+    </section>
+
+    <section class="stats">
+      <div class="card stat"><b id="statToday">0</b><span class="muted small">bloķēts šodien</span></div>
+      <div class="card stat"><b id="statTotal">0</b><span class="muted small">brīdinājumi kopā</span></div>
+    </section>
+
+    <section class="card">
+      <h2>Ziņot</h2>
+      <form id="reportForm">
+        <input type="url" id="rUrl" required placeholder="https://…" class="mono small">
+        <label class="row"><input type="radio" name="kind" value="phishing" checked> Krāpnieciska / viltota lapa</label>
+        <label class="row"><input type="radio" name="kind" value="false_positive"> Kļūdains brīdinājums – lapa ir droša</label>
+        <select id="rBrand"><option value="">Par kuru uzņēmumu/iestādi izliekas? (nav obligāti)</option></select>
+        <textarea id="rNote" maxlength="500" placeholder="Piezīme, piem. “atnāca SMS par paku” (nav obligāti)"></textarea>
+        <label class="row small muted"><input type="checkbox" id="rQuery"> Iekļaut saites parametrus (?…) – var saturēt personīgus datus</label>
+        <button class="primary" type="submit" id="rSend">Nosūtīt pārbaudei</button>
+        <div id="rMsg" class="msg" hidden></div>
+        <div class="muted small">Saite nonāk publiskā GitHub sarakstā. Pēc pārbaudes tā tiek pievienota bāzei visiem lietotājiem.</div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Pēdējie notikumi</h2>
+      <ul class="log" id="log"></ul>
+      <div class="muted small" id="logEmpty">Vēl nekas nav bloķēts. 👍</div>
+    </section>
+
+    <section class="card">
+      <details>
+        <summary>Iestatījumi</summary>
+        <div class="settings">
+          <label>Krāpnieku saites meklētājā
+            <select id="serpMode">
+              <option value="mark">Atzīmēt ar sarkanu</option>
+              <option value="hide">Paslēpt</option>
+            </select>
+          </label>
+          <label class="row"><input type="checkbox" id="serpOfficialBadge"> Rādīt ✓ pie oficiālajām lapām</label>
+          <label class="row"><input type="checkbox" id="pageChecks"> Pārbaudīt pieslēgšanās formas lapās (lokāli)</label>
+          <label class="small">Ziņojumu serviss (nav obligāti)
+            <input type="text" id="reportEndpoint" placeholder="https://…workers.dev/report">
+          </label>
+          <div class="footer small">
+            <span class="muted" id="dataInfo"></span>
+            <button type="button" id="updateNow">Atjaunināt bāzi</button>
+          </div>
+          <button type="button" id="grant" hidden>Atļaut piekļuvi visām lapām</button>
+        </div>
+      </details>
+    </section>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

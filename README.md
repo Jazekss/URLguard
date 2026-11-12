@@ -1,0 +1,67 @@
+# URLguard
+
+Bezmaksas pārlūka paplašinājums (Chrome, Edge, Brave, Opera, Firefox, arī Firefox Android), kas brīdina, ja saite **tikai izliekas** par banku, e-veselību, VID, Latvijas Pastu vai citu uzticamu zīmolu. Meklētājā (Google, Bing, DuckDuckGo) tas atzīmē vai paslēpj krāpnieku reklāmas, bet oficiālajām lapām pieliek ✓.
+
+Visas pārbaudes notiek **lokāli**. Saites netiek sūtītas uz serveri, izņemot gadījumu, kad lietotājs pats nospiež "Ziņot".
+
+## Kā tas darbojas
+
+| Līmenis | Kas notiek |
+|---|---|
+| Zināms krāpnieku domēns | To bloķē `declarativeNetRequest`, vēl pirms lapa sāk ielādēties, un parāda brīdinājuma lapu |
+| Heuristika (`extension/src/core/engine.ts`) | Pārbauda šādas pazīmes: zīmols apakšdomēnā (`eveseliba.lv.xyz.com`), iestrādāts oficiālais domēns (`swedbank.lv-login.com`), drukas kļūdas (`swedbamk.lv`), homoglifi un punycode (`аррӏе.com`), cita galotne (`swedbank.top`), aizdomīgas galotnes, bezmaksas hostingi, vārdi `login`/`verify`/`atmaksa` |
+| Meklētājs | Lietotājs meklēja "eveselība", bet saite ved uz citu domēnu. Reklāmas virsrakstā ir zīmola nosaukums, bet domēns nav oficiālais |
+| Lapas saturs | Pieslēgšanās forma, Smart-ID vai personas koda lauks uz līdzīga domēna. Šādu lapu uzskata par bīstamu |
+
+Vērtējums: **bīstams** (≥70) nozīmē pilnekrāna brīdinājumu ar pogu "Doties uz oficiālo lapu". **Aizdomīgs** (≥40) nozīmē neuzbāzīgu joslu lapas augšā. Pārējos gadījumos nekas netiek rādīts.
+
+## Struktūra
+
+```
+extension/   paplašinājums (TypeScript, esbuild)
+  src/core/  pārbaudes dzinējs (bez pārlūka API, testējams)
+  test/      vitest vienību testi + e2e (Brave/Chrome headless)
+data/        bāze, kurai var pievienoties drošības speciālisti
+  brands/    zīmoli: oficiālie domēni + atslēgvārdi (lv.json, vēlāk lt.json, ee.json)
+  blocklist/ krāpnieku domēni un konkrētas saites
+  allowlist/ kļūdaino brīdinājumu labojumi
+  scripts/   build-bundle (apvieno + paraksta), validate, triage, apply-report, keygen
+relay/       Cloudflare Worker anonīmiem ziņojumiem (nav obligāts)
+.github/     CI, ikdienas publicēšana, ziņojumu apstrāde, issue forma
+```
+
+## Ziņošanas plūsma
+
+1. Lietotājs nospiež **Ziņot** (popup logā, ar labo klikšķi uz saites vai joslā lapā).
+2. **Ar releju**: izveidojas GitHub issue, lietotājam GitHub konts nav vajadzīgs. **Bez releja**: atveras aizpildīta GitHub issue forma.
+3. `report-triage.yml` automātiski pievieno komentāru ar DNS, domēna vecumu (RDAP), informāciju, vai domēns jau ir sarakstā vai ir oficiāls, un, vai tajā ir zīmola nosaukums. Pievieno arī etiķetes.
+4. Uzturētājs uzliek etiķeti **`approved`**. Tad `report-apply.yml` ieraksta saiti sarakstā, izveido commit, aizver issue un palaiž publicēšanu.
+5. `data-publish.yml` uzbūvē bāzi (un pievieno OpenPhish plūsmu), **paraksta ar Ed25519** un publicē zarā `dist`. Paplašinājumi to lejupielādē ik pēc 6 h caur jsDelivr un pieņem tikai ar derīgu parakstu.
+
+## Izstrāde
+
+```bash
+pnpm install
+```
+```bash
+pnpm test
+```
+```bash
+cd extension && node build.mjs
+```
+```bash
+cd extension && node build.mjs --dev && node test/e2e.mjs
+```
+
+Būves nonāk `BUILDS/URLguard_<versija>_<chrome|firefox>_<datums>.zip`, bet neiepakotā versija atrodas `extension/dist/chrome`. To var ielādēt sadaļā `chrome://extensions` → Developer mode → Load unpacked.
+
+## Palaišana GitHub (vienreiz)
+
+1. Izveido repozitoriju (piem., `URLguard`) un iepušo kodu.
+2. Pievieno Secret `URLGUARD_SIGNING_KEY`, kurā ir faila `.keys/signing-private.pem` saturs. Fails jau ir uzģenerēts un nav git.
+3. Izveido etiķetes `report` un `approved`.
+4. Palaid workflow **Publicēt bāzi** (Actions → Run workflow). Tas izveidos zaru `dist`.
+5. Būvē paplašinājumu (`node build.mjs`, repozitorijs pēc noklusējuma `Jazekss/URLguard`).
+6. Pēc izvēles: `relay/` → `npx wrangler deploy` (bezmaksas Cloudflare). Pēc tam releja adresi ieraksta `extension/src/config.ts` → `DEFAULT_REPORT_ENDPOINT`.
+
+> ⚠️ Neizdzēs `.keys/signing-private.pem`. Ja atslēga pazūd, jau instalētie paplašinājumi vairs nepieņems jaunu bāzi, kamēr neiznāks jauna versija.

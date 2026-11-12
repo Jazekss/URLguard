@@ -1,0 +1,27 @@
+# Bezmaksas/koplietojamie hostingi – zīmols šeit = papildu aizdomas;
+# no plūsmām šeit bloķē tikai konkrēto saiti, ne visu domēnu.
+github.io
+pages.dev
+workers.dev
+netlify.app
+vercel.app
+web.app
+firebaseapp.com
+glitch.me
+herokuapp.com
+onrender.com
+webflow.io
+wixsite.com
+weebly.com
+000webhostapp.com
+blogspot.com
+sites.google.com
+docs.google.com
+forms.gle
+r2.dev
+ipfs.io
+dweb.link
+square.site
+godaddysites.com
+mystrikingly.com
+jimdosite.com

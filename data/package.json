@@ -1,0 +1,14 @@
+{
+  "name": "urlguard-data",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "build": "node scripts/build-bundle.mjs",
+    "build:feeds": "node scripts/build-bundle.mjs --feeds --sign",
+    "keygen": "node scripts/keygen.mjs"
+  },
+  "dependencies": {
+    "tldts": "^7.0.0"
+  }
+}

@@ -1,0 +1,34 @@
+# Jauns ziņojums -> automātiska pārbaude (DNS, domēna vecums, vai jau sarakstā, vai oficiāls) + etiķetes.
+name: Ziņojuma pārbaude
+on:
+  issues:
+    types: [opened, edited]
+permissions:
+  contents: read
+  issues: write
+jobs:
+  triage:
+    if: contains(github.event.issue.labels.*.name, 'report')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 12 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --filter ./data
+      - name: Pārbaudīt
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: node data/scripts/triage.mjs
+      - name: Komentārs un etiķetes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUM: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" --body-file triage-comment.md
+          LABELS=$(cat triage-labels.txt)
+          if [ -n "$LABELS" ]; then
+            for l in ${LABELS//,/ }; do gh label create "$l" --repo "$GITHUB_REPOSITORY" --color BFD4F2 2>/dev/null || true; done
+            gh issue edit "$NUM" --repo "$GITHUB_REPOSITORY" --add-label "$LABELS"
+          fi

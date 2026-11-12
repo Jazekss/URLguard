@@ -1,0 +1,6 @@
+{
+  "_comment": "Ārējās krāpnieku plūsmas, ko CI katru dienu apvieno ar mūsu sarakstu. Pirms ieslēgšanas pārbaudi licenci.",
+  "feeds": [
+    { "name": "OpenPhish Community", "url": "https://openphish.com/feed.txt", "format": "urls", "enabled": true, "max": 20000 }
+  ]
+}

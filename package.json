@@ -1,0 +1,10 @@
+{
+  "name": "urlguard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --filter ./extension run build",
+    "test": "pnpm --filter ./data run validate && pnpm --filter ./extension run test",
+    "e2e": "pnpm --filter ./extension run e2e"
+  }
+}

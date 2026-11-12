@@ -1,0 +1,106 @@
+// node build.mjs [--dev] [--repo īpašnieks/repo]
+// Rezultāts: dist/chrome, dist/firefox + ZIP faili ../BUILDS/URLguard_<ver>_<platform>_<datums>.zip
+import { build } from 'esbuild';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { zipSync } from 'fflate';
+import { shieldPng } from './scripts/icons.mjs';
+import { buildBundle } from '../data/scripts/build-bundle.mjs';
+
+const args = process.argv.slice(2);
+const dev = args.includes('--dev');
+const repoArg = args.indexOf('--repo');
+const REPO = repoArg >= 0 ? args[repoArg + 1] : process.env.URLGUARD_REPO || 'Jazekss/URLguard';
+const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+const VERSION = pkg.version;
+const PUBKEY = readFileSync('../data/keys/public.b64', 'utf8').trim();
+
+const SEARCH_MATCHES = [
+  ...['com', 'lv', 'lt', 'ee', 'fi', 'se', 'no', 'dk', 'de', 'pl', 'co.uk', 'fr', 'es', 'it', 'nl', 'ie', 'ru'].map(
+    (t) => `*://*.google.${t}/search*`,
+  ),
+  '*://*.bing.com/search*',
+  '*://duckduckgo.com/*',
+];
+
+function manifest(target) {
+  const m = {
+    manifest_version: 3,
+    name: '__MSG_extName__',
+    description: '__MSG_extDesc__',
+    default_locale: 'lv',
+    version: VERSION,
+    icons: { 16: 'icons/icon16.png', 32: 'icons/icon32.png', 48: 'icons/icon48.png', 128: 'icons/icon128.png' },
+    action: { default_popup: 'popup.html', default_title: 'URLguard', default_icon: { 16: 'icons/icon16.png', 32: 'icons/icon32.png' } },
+    permissions: ['storage', 'unlimitedStorage', 'webRequest', 'declarativeNetRequest', 'alarms', 'contextMenus'],
+    host_permissions: ['http://*/*', 'https://*/*'],
+    content_scripts: [
+      { matches: SEARCH_MATCHES, js: ['serp.js'], run_at: 'document_idle' },
+      { matches: ['http://*/*', 'https://*/*'], exclude_matches: SEARCH_MATCHES, js: ['page.js'], run_at: 'document_idle' },
+    ],
+    web_accessible_resources: [{ resources: ['warning.html'], matches: ['http://*/*', 'https://*/*'] }],
+  };
+  if (target === 'chrome') {
+    m.background = { service_worker: 'background.js' };
+    m.minimum_chrome_version = '120';
+  } else {
+    m.background = { scripts: ['background.js'] };
+    m.browser_specific_settings = {
+      gecko: { id: 'urlguard@urlguard.app', strict_min_version: '128.0', data_collection_permissions: { required: ['none'] } },
+      gecko_android: { strict_min_version: '128.0' },
+    };
+  }
+  return m;
+}
+
+function walk(dir) {
+  return readdirSync(dir).flatMap((f) => {
+    const p = join(dir, f);
+    return statSync(p).isDirectory() ? walk(p) : [p];
+  });
+}
+
+const bundle = await buildBundle();
+const icons = Object.fromEntries([16, 32, 48, 128].map((s) => [s, shieldPng(s)]));
+const date = new Date().toISOString().slice(0, 10);
+
+for (const target of ['chrome', 'firefox']) {
+  const out = join('dist', target);
+  rmSync(out, { recursive: true, force: true });
+  mkdirSync(join(out, 'icons'), { recursive: true });
+  mkdirSync(join(out, 'data'), { recursive: true });
+
+  await build({
+    entryPoints: {
+      background: 'src/background.ts',
+      serp: 'src/content/serp.ts',
+      page: 'src/content/page.ts',
+      popup: 'src/ui/popup.ts',
+      warning: 'src/ui/warning.ts',
+    },
+    outdir: out,
+    bundle: true,
+    format: 'iife',
+    target: ['chrome120', 'firefox128'],
+    minify: !dev,
+    sourcemap: dev ? 'inline' : false,
+    legalComments: 'none',
+    define: { __PUBKEY__: JSON.stringify(PUBKEY), __DATA_REPO__: JSON.stringify(REPO) },
+    logLevel: 'warning',
+  });
+
+  cpSync('static', out, { recursive: true });
+  for (const [s, buf] of Object.entries(icons)) writeFileSync(join(out, 'icons', `icon${s}.png`), buf);
+  writeFileSync(join(out, 'data', 'bundle.json'), JSON.stringify(bundle));
+  writeFileSync(join(out, 'manifest.json'), JSON.stringify(manifest(target), null, 2));
+
+  if (!dev) {
+    const files = Object.fromEntries(walk(out).map((f) => [relative(out, f).replace(/\\/g, '/'), readFileSync(f)]));
+    const buildsDir = join('..', 'BUILDS');
+    if (!existsSync(buildsDir)) mkdirSync(buildsDir);
+    const zipName = `URLguard_${VERSION}_${target}_${date}.zip`;
+    writeFileSync(join(buildsDir, zipName), zipSync(files, { level: 9 }));
+    console.log(`✓ ${target}: dist/${target}  ->  BUILDS/${zipName}`);
+  } else console.log(`✓ ${target}: dist/${target} (dev)`);
+}
+console.log(`Repo: ${REPO}${REPO.includes('OWNER') ? '  (⚠ norādi ar --repo vai URLGUARD_REPO)' : ''}`);

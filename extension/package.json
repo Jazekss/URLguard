@@ -1,0 +1,25 @@
+{
+  "name": "urlguard-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:dev": "node build.mjs --dev",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "e2e": "node test/e2e.mjs"
+  },
+  "dependencies": {
+    "tldts": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.7",
+    "esbuild": "^0.28.2",
+    "fflate": "^0.8.3",
+    "happy-dom": "^21.0.4",
+    "puppeteer-core": "^25.17.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

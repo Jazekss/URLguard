@@ -1,0 +1,25 @@
+# Droši domēni, kas izskatās pēc zīmola, bet nav krāpnieki (kļūdaino brīdinājumu labojumi).
+# Viens reģistrējamais domēns rindā. Komentārs pēc # (piem. issue numurs).
+
+# Ziņu portāli
+lsm.lv
+delfi.lv
+tvnet.lv
+apollo.lv
+la.lv
+jauns.lv
+nra.lv
+wikipedia.org
+
+# Maksājumu / autentifikācijas starpnieki (rāda Smart-ID / banku logotipus)
+dokobit.com
+montonio.com
+maksekeskus.ee
+makecommerce.lv
+everypay.com
+klix.app
+stripe.com
+
+# Līdzīgi nosaukumi, citi uzņēmumi
+citadel.com
+translate.goog

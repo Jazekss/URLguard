@@ -1,0 +1,2 @@
+# Konkrētas krāpnieku saites uz koplietojamiem hostiem (sites.google.com, github.io, pages.dev u.c.),
+# kur nedrīkst bloķēt visu domēnu. Formāts: host/ceļš (bez https://), salīdzina pēc prefiksa.

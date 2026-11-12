@@ -1,0 +1,13 @@
+node_modules/
+extension/dist/
+data/dist/
+relay/.wrangler/
+BUILDS/
+RELEASE/
+# Parakstīšanas privātā atslēga – NEKAD necommitot (glabājas GitHub Secret)
+.keys/
+*.pem
+.DS_Store
+Thumbs.db
+.e2e-profile/
+extension/test/popup.png

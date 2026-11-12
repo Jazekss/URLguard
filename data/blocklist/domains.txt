@@ -1,0 +1,5 @@
+# Zināmi krāpnieku domēni (bloķē arī visus apakšdomēnus).
+# Viens domēns rindā; pēc # – avots, piem. "# #123" (GitHub issue).
+
+# Testa ieraksts – pārbaudei: http://phishing-test.urlguard.invalid/
+phishing-test.urlguard.invalid

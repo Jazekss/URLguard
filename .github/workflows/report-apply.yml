@@ -1,0 +1,55 @@
+# Uzturētājs pievieno etiķeti "approved" -> saite nonāk sarakstā, issue tiek aizvērts, bāze publicēta.
+name: Apstiprināt ziņojumu
+on:
+  issues:
+    types: [labeled]
+permissions:
+  contents: write
+  issues: write
+  actions: write
+concurrency:
+  group: data-write
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.event.label.name == 'approved' && contains(github.event.issue.labels.*.name, 'report')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pārbaudīt tiesības
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.event.sender.login }}
+        run: |
+          PERM=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$ACTOR/permission" --jq .permission)
+          case "$PERM" in admin|maintain|write) echo "ok: $PERM";; *) echo "Nav tiesību: $PERM"; exit 1;; esac
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 12 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --filter ./data
+      - name: Pievienot sarakstam
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: node data/scripts/apply-report.mjs && node data/scripts/validate.mjs
+      - name: Commit
+        env:
+          NUM: ${{ github.event.issue.number }}
+        run: |
+          git config user.name "urlguard-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "data: ziņojums #$NUM"
+          git push
+      - name: Aizvērt issue un publicēt
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUM: ${{ github.event.issue.number }}
+        run: |
+          if [ -f apply-result.md ]; then gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" --body-file apply-result.md; fi
+          if [ "${{ job.status }}" = "success" ]; then
+            gh issue close "$NUM" --repo "$GITHUB_REPOSITORY" --reason completed
+            gh workflow run data-publish.yml --repo "$GITHUB_REPOSITORY"
+          fi
