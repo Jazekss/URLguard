@@ -55,6 +55,10 @@ Statistiku sūta tikai tad, ja lietotājs piekrīt. Reizi dienā tiek nosūtīti
 
 `scripts/wrangler.mjs` glabā Cloudflare pieslēgšanās datus mapē `F:\Projects\_deps\wrangler\config`.
 
+## Veikali
+
+Iesniegšanas kontrolsaraksts, teksti un attēli: [store/](store/README.md). Izlaidums: `git tag v1.0.0 && git push origin v1.0.0`. Tas izveido GitHub Release ar ZIP failiem.
+
 ## Izstrāde
 
 ```bash
