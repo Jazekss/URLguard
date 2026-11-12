@@ -72,6 +72,16 @@ describe('krāpnieku paraugi', () => {
 });
 
 describe('meklēšanas konteksts', () => {
+  it('līdzīgs parasts vārds nav "krāpnieku" pat meklējot zīmolu', () => {
+    const e2 = new Engine({ ...bundle, allowlist: [] });
+    // veseliba.lv ≈ eveseliba, bet cita galotne (lv ≠ gov.lv) -> augstākais "aizdomīgs"
+    expect(e2.check('https://veseliba.lv/patient', { query: 'eveselība' }).verdict).not.toBe('danger');
+    expect(e2.check('https://www.eveseliba.lv/', { query: 'eveselība' }).verdict).not.toBe('danger');
+  });
+  it('baltais saraksts uzvar', () => {
+    expect(v('https://veseliba.lv/patient', { query: 'eveselība' })).toBe('safe');
+  });
+
   it('reklāma ar zīmola virsrakstu uz sveša domēna', () => {
     const r = engine.check('https://pakalpojumi-portals.top/', {
       query: 'eveselība', isAd: true, title: 'E-veselība – pieslēgties portālam',
@@ -84,8 +94,8 @@ describe('meklēšanas konteksts', () => {
     expect(v('https://finanses.example.com/raksts', { query: 'swedbank', title: 'Swedbank ziņas' })).toBe('unknown');
   });
   it('meklēšanas sakritība palielina vērtējumu', () => {
-    const a = engine.check('https://swedbanka-lizings.com/').score;
-    const b = engine.check('https://swedbanka-lizings.com/', { query: 'swedbank' }).score;
+    const a = engine.check('https://swedbank-ib.com/').score;
+    const b = engine.check('https://swedbank-ib.com/', { query: 'swedbank' }).score;
     expect(b).toBeGreaterThan(a);
   });
   it('atpazīst zīmolu meklēšanas frāzē', () => {

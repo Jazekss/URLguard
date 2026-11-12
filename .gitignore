@@ -15,3 +15,4 @@ extension/test/popup.png
 # Wrangler/Cloudflare pieslēgšanās dati – nekad git
 **/.wrangler/
 relay/Projects_*/
+extension/test/serp.png

@@ -6,18 +6,48 @@ const DONE = 'urlguardDone';
 let hiddenCount = 0;
 let notice: HTMLElement | null = null;
 
-function badge(text: string, kind: 'danger' | 'warn' | 'ok'): HTMLElement {
-  const el = document.createElement('div');
-  el.className = 'urlguard-badge';
-  const colors = {
-    danger: ['#fef2f2', '#b91c1c', '#fecaca'],
-    warn: ['#fffbeb', '#92400e', '#fde68a'],
-    ok: ['#f0fdf4', '#15803d', '#bbf7d0'],
-  }[kind];
-  el.style.cssText = `display:inline-flex;align-items:center;gap:6px;margin:0 0 6px;padding:3px 10px;border-radius:999px;
-    font:600 12px/1.4 system-ui,sans-serif;background:${colors[0]};color:${colors[1]};border:1px solid ${colors[2]};`;
-  el.textContent = text;
-  return el;
+type MarkKind = 'danger' | 'warn' | 'ok';
+
+const MARK: Record<MarkKind, { color: string; glyph: string }> = {
+  ok: { color: '#16a34a', glyph: '<path d="M5.5 10.2l3 3 6-6.4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' },
+  warn: { color: '#ea8a0c', glyph: '<path d="M10 5.2v6" stroke="#fff" stroke-width="2.3" stroke-linecap="round"/><circle cx="10" cy="14.6" r="1.35" fill="#fff"/>' },
+  danger: { color: '#dc2626', glyph: '<path d="M6.6 6.6l6.8 6.8M13.4 6.6l-6.8 6.8" stroke="#fff" stroke-width="2.3" stroke-linecap="round"/>' },
+};
+
+/**
+ * Maza ikona virsraksta rindā (paskaidrojums – uzbraucot ar peli).
+ * Savs elements + slēgts Shadow DOM: meklētāja CSS to nevar pagriezt, pārbīdīt vai pārkrāsot.
+ */
+function marker(kind: MarkKind, tip: string): HTMLElement {
+  const host = document.createElement('urlguard-mark');
+  host.className = 'urlguard-mark';
+  host.dataset.kind = kind;
+  host.title = tip;
+  host.setAttribute('role', 'img');
+  host.setAttribute('aria-label', tip);
+  host.style.cssText =
+    'all:initial;display:inline-block;width:0.95em;height:0.95em;min-width:15px;min-height:15px;margin:0 0.35em 0 0;' +
+    'vertical-align:-0.12em;transform:none;cursor:help;line-height:0;';
+  const root = host.attachShadow({ mode: 'closed' });
+  const { color, glyph } = MARK[kind];
+  root.innerHTML = `<svg viewBox="0 0 20 20" width="100%" height="100%" aria-hidden="true" style="display:block">
+    <circle cx="10" cy="10" r="10" fill="${color}"/>${glyph}</svg>`;
+  // Klikšķis uz ikonas neatver saiti
+  host.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+  return host;
+}
+
+function tipText(head: string, r: SerpItemOut['result']): string {
+  return ['URLguard: ' + head, ...r.reasons.map((x) => '• ' + x.text)].join('\n');
+}
+
+/** Kur ielikt ikonu: virsraksta sākumā (h3 / role=heading), citādi saites sākumā. */
+function placeMarker(item: SerpItem, el: HTMLElement) {
+  const target = item.anchor.matches('h1,h2,h3,[role="heading"]') ? item.anchor : item.anchor.querySelector('h2,h3') ?? item.anchor;
+  target.prepend(el);
 }
 
 function ensureNotice(container: Element) {
@@ -46,9 +76,9 @@ function ensureNotice(container: Element) {
 }
 
 function apply(item: SerpItem, res: SerpItemOut, mode: 'mark' | 'hide', officialBadge: boolean) {
-  const { block, anchor } = item;
+  const { block } = item;
   const r = res.result;
-  const where = anchor.closest('a') ?? anchor;
+  const brand = r.brand?.name;
   if (res.verdict === 'danger') {
     if (mode === 'hide') {
       block.style.display = 'none';
@@ -58,22 +88,15 @@ function apply(item: SerpItem, res: SerpItemOut, mode: 'mark' | 'hide', official
       ensureNotice(container);
       return;
     }
+    // Rāmis ar outline – nemaina izkārtojumu
     block.style.outline = '2px solid #dc2626';
-    block.style.outlineOffset = '4px';
-    block.style.borderRadius = '8px';
-    block.style.opacity = '0.75';
-    const brand = r.brand ? ` – tā nav ${r.brand.name} oficiālā lapa` : '';
-    const b = badge(`⚠ URLguard: krāpnieku saite${brand}`, 'danger');
-    b.title = r.reasons.map((x) => x.text).join('\n');
-    where.parentElement?.insertBefore(b, where);
+    block.style.outlineOffset = '6px';
+    block.style.borderRadius = '10px';
+    placeMarker(item, marker('danger', tipText(`krāpnieku saite${brand ? ` – tā nav ${brand} oficiālā lapa` : ''}`, r)));
   } else if (res.verdict === 'suspicious') {
-    const brand = r.brand ? `: nav ${r.brand.name} oficiālā adrese` : '';
-    const b = badge(`⚠ Aizdomīga saite${brand}`, 'warn');
-    b.title = r.reasons.map((x) => x.text).join('\n');
-    where.parentElement?.insertBefore(b, where);
+    placeMarker(item, marker('warn', tipText(`aizdomīga saite${brand ? ` – nav ${brand} oficiālā adrese` : ''}`, r)));
   } else if (res.officialMatch && officialBadge && !item.isAd) {
-    const b = badge(`✓ ${r.brand?.name}: oficiālā lapa`, 'ok');
-    where.parentElement?.insertBefore(b, where);
+    placeMarker(item, marker('ok', `URLguard: ${brand} oficiālā lapa`));
   }
 }
 

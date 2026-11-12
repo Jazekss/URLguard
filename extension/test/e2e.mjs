@@ -116,12 +116,26 @@ try {
   {
     const page = await newPage();
     await page.goto('https://www.google.com/search?q=eveseliba', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('.urlguard-badge', { timeout: 6000 }).catch(() => {});
+    await page.waitForSelector('urlguard-mark', { timeout: 6000 }).catch(() => {});
     await sleep(500);
-    const badges = await page.$$eval('.urlguard-badge', (els) => els.map((e) => e.textContent));
-    ok('reklāma atzīmēta kā krāpnieciska', badges.some((b) => /krāpnieku saite/.test(b)), JSON.stringify(badges));
-    ok('oficiālā lapa ar ✓', badges.some((b) => /oficiālā lapa/.test(b)));
-    ok('ziņu portāls netiek atzīmēts', badges.length === 2);
+    const marks = await page.$$eval('urlguard-mark', (els) =>
+      els.map((e) => {
+        const h = e.parentElement;
+        const r = e.getBoundingClientRect();
+        const hr = h.getBoundingClientRect();
+        return { kind: e.dataset.kind, title: e.title, inHeading: !!h.closest('h3,[role="heading"]'), firstChild: h.firstChild === e,
+          centered: Math.abs(r.top + r.height / 2 - (hr.top + hr.height / 2)) < hr.height / 2, transform: getComputedStyle(e).transform };
+      }),
+    );
+    const danger = marks.find((m) => m.kind === 'danger');
+    ok('reklāma atzīmēta ar sarkanu ikonu', !!danger && /krāpnieku saite/.test(danger.title), danger?.title.split('\n')[0]);
+    ok('oficiālā lapa ar zaļu ✓', marks.some((m) => m.kind === 'ok'));
+    ok('ziņu portāls netiek atzīmēts', marks.length === 2);
+    ok('ikonas ir virsraksta sākumā, tajā pašā rindā', marks.every((m) => m.inHeading && m.firstChild && m.centered), JSON.stringify(marks.map((m) => [m.inHeading, m.firstChild, m.centered])));
+    ok('ikonas nav pagrieztas', marks.every((m) => m.transform === 'none'));
+    const outline = await page.$eval('[data-text-ad]', (e) => e.style.outline);
+    ok('sarkanā reklāma ar rāmi', /solid/.test(outline));
+    await page.screenshot({ path: resolve('test/serp.png') });
     await page.close();
   }
 

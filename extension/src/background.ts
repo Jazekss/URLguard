@@ -264,6 +264,8 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
           const r2 = engine.check(it.displayUrl, ctx);
           if (RANK[r2.verdict] > RANK[r.verdict]) r = r2;
         }
+        // Organiskos rezultātus meklētājs jau filtrē – bez saraksta trāpījuma tie nav "bīstami", tikai "aizdomīgi".
+        if (!it.isAd && r.verdict === 'danger' && !r.listed) r = { ...r, verdict: 'suspicious' };
         const officialMatch = r.verdict === 'official' && !!r.brand && qBrands.includes(r.brand.id);
         return { key: it.key, verdict: r.verdict, result: r, officialMatch };
       });

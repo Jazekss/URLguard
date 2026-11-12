@@ -66,6 +66,8 @@ export class Engine {
   readonly bundle: Bundle;
   private official = new Map<string, Brand>();
   private officialSet = new Set<string>();
+  /** Zīmola oficiālo domēnu publiskās galotnes (lv, gov.lv, com …). */
+  private officialSuffixes = new Map<string, Set<string>>();
   private allow: Set<string>;
   private block: Set<string>;
   private blockUrls: string[];
@@ -78,6 +80,7 @@ export class Engine {
     for (const b of bundle.brands) {
       this.brandIds.set(b.id, b);
       for (const d of b.official) this.official.set(d.toLowerCase(), b);
+      this.officialSuffixes.set(b.id, new Set(b.official.map((d) => parse(d).publicSuffix ?? '')));
       for (const k of b.keywords) {
         const n = norm(k);
         if (n.length >= 4) this.kws.push({ brand: b, kw: n, skel: skeleton(n), strict: false });
@@ -189,7 +192,7 @@ export class Engine {
           dTokens.some((t) => t.length >= 5 && levenshtein(t, e.kw, 1) <= 1))
       ) {
         // drukas kļūda + tā pati galotne kā oficiālajam (swedbamk.lv, steamcommunlty.com) = ļoti aizdomīgi
-        const sameTld = e.brand.official.some((o) => o.endsWith('.' + (p.publicSuffix ?? '-')));
+        const sameTld = this.officialSuffixes.get(e.brand.id)?.has(p.publicSuffix ?? '-') ?? false;
         [s, code] = [sameTld ? 70 : 55, 'typosquat'];
       }
       else if (subTokens.includes(e.kw) || subNorm.includes(e.kw)) [s, code] = [40, 'brand-in-subdomain'];
@@ -254,7 +257,8 @@ export class Engine {
         score += 10;
         reasons.push(this.reason('punycode', {}));
       }
-      if (qBrands.includes(brand)) {
+      // Meklēšanas sakritība pastiprina tikai jau stipru atdarinājumu (ne tikai līdzīgu vārdu)
+      if (qBrands.includes(brand) && (hit?.score ?? 0) >= 65) {
         score += 15;
         reasons.push(this.reason('search-mismatch', { brand }));
       }
