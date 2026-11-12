@@ -3,6 +3,7 @@
 import { build } from 'esbuild';
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { createPublicKey, verify } from 'node:crypto';
 import { zipSync } from 'fflate';
 import { shieldPng } from './scripts/icons.mjs';
 import { buildBundle } from '../data/scripts/build-bundle.mjs';
@@ -60,7 +61,30 @@ function walk(dir) {
   });
 }
 
-const bundle = await buildBundle();
+// Iebūvētā bāze: jaunākā parakstītā no releja (ar paraksta pārbaudi); ja nav pieejama – lokālā ar datumu 1970,
+// lai jebkura tīklā publicēta parakstīta bāze to aizstātu pirmajā atjaunināšanā.
+async function embeddedBundle() {
+  const relay = 'https://urlguard-relay.urlguard-relay.workers.dev';
+  try {
+    const [b, s] = await Promise.all([fetch(`${relay}/bundle.json`), fetch(`${relay}/bundle.json.sig`)]);
+    if (b.ok && s.ok) {
+      const body = Buffer.from(await b.arrayBuffer());
+      const pub = createPublicKey({ key: Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), Buffer.from(PUBKEY, 'base64')]), format: 'der', type: 'spki' });
+      if (verify(null, body, pub, Buffer.from((await s.text()).trim(), 'base64'))) {
+        const j = JSON.parse(body.toString('utf8'));
+        console.log(`Iebūvēta publicētā bāze (${j.generated}, ${j.blocklist.domains.length + j.blocklist.urls.length} bloķēti)`);
+        return j;
+      }
+      console.warn('⚠ Releja bāzes paraksts nederīgs – izmantoju lokālo');
+    }
+  } catch (e) {
+    console.warn(`⚠ Relejs nav pieejams (${e.message}) – izmantoju lokālo bāzi`);
+  }
+  return { ...(await buildBundle()), generated: '1970-01-01T00:00:00.000Z' };
+}
+const bundle = args.includes('--local-data')
+  ? { ...(await buildBundle()), generated: '1970-01-01T00:00:00.000Z' }
+  : await embeddedBundle();
 const icons = Object.fromEntries([16, 32, 48, 128].map((s) => [s, shieldPng(s)]));
 const date = new Date().toISOString().slice(0, 10);
 

@@ -1,5 +1,5 @@
 // End-to-end tests: ielādē dist/chrome paplašinājumu Brave/Chrome (headless) un pārbauda galvenos scenārijus.
-//   node build.mjs --dev && node test/e2e.mjs
+//   node build.mjs --dev --local-data && node test/e2e.mjs   (--local-data: iebūvē lokālo bāzi ar datumu 1970, lai pārbaudītu atjaunināšanu)
 // Pārlūks: env BROWSER_PATH vai Brave lokālajā instalācijā.
 import puppeteer from 'puppeteer-core';
 import { existsSync, rmSync } from 'node:fs';
@@ -183,6 +183,11 @@ try {
     const brands = await page.$$eval('#rBrand option', (o) => o.length);
     ok('ziņošanas formā zīmolu saraksts', brands > 40);
     await page.screenshot({ path: resolve('test/popup.png'), fullPage: true });
+    // Bāzes atjaunināšana no releja (paraksta pārbaude paplašinājumā)
+    const before = await page.evaluate(() => chrome.runtime.sendMessage({ type: 'getStatus' }).then((s) => s.data.generated));
+    const upd = await page.evaluate(() => chrome.runtime.sendMessage({ type: 'updateNow' }));
+    const after = await page.evaluate(() => chrome.runtime.sendMessage({ type: 'getStatus' }).then((s) => s.data));
+    ok('bāzes atjaunināšana no releja', upd === 'updated' && after.domains > 1, `${upd}: ${before} -> ${after.generated}, bloķēti ${after.domains}`);
     await page.close();
   }
 } catch (e) {

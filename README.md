@@ -67,7 +67,7 @@ pnpm test
 cd extension && node build.mjs
 ```
 ```bash
-cd extension && node build.mjs --dev && node test/e2e.mjs
+cd extension && node build.mjs --dev --local-data && node test/e2e.mjs
 ```
 
 Būves nonāk `BUILDS/URLguard_<versija>_<chrome|firefox>_<datums>.zip`, bet neiepakotā versija atrodas `extension/dist/chrome`. To var ielādēt sadaļā `chrome://extensions` → Developer mode → Load unpacked.
