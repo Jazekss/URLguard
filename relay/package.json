@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "wr": "node scripts/wrangler.mjs",
+    "dev": "node scripts/wrangler.mjs dev",
+    "deploy": "node scripts/wrangler.mjs deploy"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

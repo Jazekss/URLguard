@@ -1,8 +1,8 @@
 import { Engine } from './core/engine';
 import { SCHEMA_VERSION, type Bundle, type CheckResult, type Verdict } from './core/types';
 import { verifyBundle } from './core/signature';
-import { BUNDLE_URLS, DATA_REPO, PUBLIC_KEY_B64, UPDATE_PERIOD_MIN } from './config';
-import { cleanUrl, getSettings, type LogEntry, type SerpItemIn, type SerpItemOut } from './shared';
+import { BUNDLE_URLS, DATA_REPO, PUBLIC_KEY_B64, STATS_ENDPOINT, TARGET, UPDATE_PERIOD_MIN } from './config';
+import { cleanUrl, EMPTY_STATS, getSettings, type LogEntry, type SerpItemIn, type SerpItemOut, type StatCounts } from './shared';
 
 const RANK: Record<Verdict, number> = { official: 0, safe: 1, unknown: 2, suspicious: 3, danger: 4 };
 const DNR_BASE_ID = 1000;
@@ -135,7 +135,51 @@ async function addLog(results: CheckResult[], source: LogEntry['source'], action
     });
   }
   await chrome.storage.local.set({ log: log.slice(0, LOG_MAX) });
+  const field: Record<LogEntry['action'], keyof StatCounts> = {
+    blocked: 'blocked', warned: 'warned', marked: 'serpMarked', hidden: 'serpHidden', bypassed: 'bypassed',
+  };
+  await countStat(field[action], results.length);
 }
+
+// ---------------------------------------------------------------- anonīmā statistika (tikai ar piekrišanu)
+/** Lokāls skaitītājs; nekas netiek glabāts/sūtīts, ja lietotājs nav piekritis. */
+async function countStat(field: keyof StatCounts, n = 1) {
+  if ((await getSettings()).shareStats !== true) return;
+  const { statsPending } = (await chrome.storage.local.get('statsPending')) as { statsPending?: StatCounts };
+  const s = { ...EMPTY_STATS, ...statsPending };
+  s[field] += n;
+  await chrome.storage.local.set({ statsPending: s });
+}
+
+/** Reizi dienā nosūta TIKAI skaitļus (bez saitēm, laikiem, identifikatoriem). */
+async function sendStats() {
+  if ((await getSettings()).shareStats !== true) return;
+  const { statsPending } = (await chrome.storage.local.get('statsPending')) as { statsPending?: StatCounts };
+  const c = { ...EMPTY_STATS, ...statsPending };
+  try {
+    const res = await fetch(STATS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ browser: TARGET, c }),
+    });
+    if (res.ok) await chrome.storage.local.set({ statsPending: EMPTY_STATS, statsLastSent: Date.now() });
+  } catch {
+    /* mēģināsim rīt */
+  }
+}
+
+function ensureStatsAlarm() {
+  chrome.alarms.get('stats-send', (a) => {
+    // Nejauša nobīde, lai visi paplašinājumi nesūta vienlaicīgi
+    if (!a) chrome.alarms.create('stats-send', { periodInMinutes: 1440, delayInMinutes: 60 + Math.floor(Math.random() * 600) });
+  });
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes.settings && (changes.settings.newValue as { shareStats?: boolean } | undefined)?.shareStats !== true) {
+    chrome.storage.local.remove(['statsPending']);
+  }
+});
 
 // ---------------------------------------------------------------- UI palīgi
 function setBadge(tabId: number, r: CheckResult) {
@@ -195,7 +239,8 @@ type Msg =
   | { type: 'getStatus'; url?: string; tabId?: number }
   | { type: 'updateNow' }
   | { type: 'getBrands' }
-  | { type: 'openReport'; url: string; kind?: 'phishing' | 'false_positive' };
+  | { type: 'openReport'; url: string; kind?: 'phishing' | 'false_positive' }
+  | { type: 'reportSent' };
 
 /** Popup: ja cilnei jau ir rezultāts (piem. no lapas satura pārbaudes) – rādām to. */
 async function statusFor(engine: Engine, url: string, tabId?: number): Promise<CheckResult> {
@@ -287,6 +332,9 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     }
     case 'updateNow':
       return updateBundle();
+    case 'reportSent':
+      await countStat('reports');
+      return true;
     case 'getBrands':
       return (await getEngine()).brands.map((b) => ({ id: b.id, name: b.name }));
     case 'openReport':
@@ -316,6 +364,7 @@ chrome.runtime.onInstalled.addListener(async () => {
     chrome.contextMenus.create({ id: 'ug-report', title: 'URLguard: ziņot par krāpniecisku saiti', contexts: ['link', 'page'] });
   });
   chrome.alarms.create('bundle-update', { periodInMinutes: UPDATE_PERIOD_MIN, delayInMinutes: 1 });
+  ensureStatsAlarm();
   await getEngine();
 });
 
@@ -323,8 +372,10 @@ chrome.runtime.onStartup.addListener(() => {
   chrome.alarms.get('bundle-update', (a) => {
     if (!a) chrome.alarms.create('bundle-update', { periodInMinutes: UPDATE_PERIOD_MIN, delayInMinutes: 1 });
   });
+  ensureStatsAlarm();
 });
 
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === 'bundle-update') updateBundle().then((r) => console.log('URLguard bāze:', r));
+  if (a.name === 'stats-send') sendStats();
 });

@@ -9,6 +9,8 @@ export interface Settings {
   /** Analizēt lapas saturu (pieslēgšanās formas, Smart-ID). Notiek lokāli. */
   pageChecks: boolean;
   reportEndpoint: string;
+  /** Anonīmā statistika: null = vēl nav jautāts, true/false = lietotāja izvēle. */
+  shareStats: boolean | null;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -17,6 +19,7 @@ export const DEFAULT_SETTINGS: Settings = {
   serpOfficialBadge: true,
   pageChecks: true,
   reportEndpoint: '',
+  shareStats: null,
 };
 
 export async function getSettings(): Promise<Settings> {
@@ -40,6 +43,18 @@ export interface LogEntry {
   source: 'nav' | 'serp' | 'page';
   action: 'blocked' | 'warned' | 'hidden' | 'marked' | 'bypassed';
 }
+
+/** Skaitītāji, ko (ar piekrišanu) reizi dienā nosūta kā kopsummu. */
+export interface StatCounts {
+  blocked: number;
+  warned: number;
+  serpMarked: number;
+  serpHidden: number;
+  bypassed: number;
+  reports: number;
+}
+
+export const EMPTY_STATS: StatCounts = { blocked: 0, warned: 0, serpMarked: 0, serpHidden: 0, bypassed: 0, reports: 0 };
 
 export interface SerpItemIn {
   key: string;

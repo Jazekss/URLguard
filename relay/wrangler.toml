@@ -4,11 +4,13 @@ compatibility_date = "2026-11-01"
 
 [vars]
 GITHUB_REPO = "Jazekss/URLguard"
-MAX_PER_HOUR = "10"
+MAX_REPORTS_PER_HOUR = "10"
+MAX_STATS_PER_DAY = "20"
 
-# npx wrangler kv namespace create RL  -> ieliec id šeit
-[[kv_namespaces]]
-binding = "RL"
-id = "REPLACE_WITH_KV_ID"
+# Slepenais tokens (nekad failā!):  node scripts/wrangler.mjs secret put GITHUB_TOKEN
 
-# Slepenais tokens (nekad failā!):  npx wrangler secret put GITHUB_TOKEN
+# Anonīmā statistika (tikai skaitļi). Shēma: schema.sql
+[[d1_databases]]
+binding = "DB"
+database_name = "urlguard-stats"
+database_id = "86fb36ab-05c6-40f2-9240-0916e4f6d56b"

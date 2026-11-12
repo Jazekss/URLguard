@@ -46,7 +46,7 @@ function manifest(target) {
   } else {
     m.background = { scripts: ['background.js'] };
     m.browser_specific_settings = {
-      gecko: { id: 'urlguard@urlguard.app', strict_min_version: '128.0', data_collection_permissions: { required: ['none'] } },
+      gecko: { id: 'urlguard@urlguard.app', strict_min_version: '128.0', data_collection_permissions: { required: ['none'], optional: ['technicalAndInteraction'] } },
       gecko_android: { strict_min_version: '128.0' },
     };
   }
@@ -85,7 +85,7 @@ for (const target of ['chrome', 'firefox']) {
     minify: !dev,
     sourcemap: dev ? 'inline' : false,
     legalComments: 'none',
-    define: { __PUBKEY__: JSON.stringify(PUBKEY), __DATA_REPO__: JSON.stringify(REPO) },
+    define: { __PUBKEY__: JSON.stringify(PUBKEY), __DATA_REPO__: JSON.stringify(REPO), __TARGET__: JSON.stringify(target) },
     logLevel: 'warning',
   });
 

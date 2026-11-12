@@ -11,3 +11,7 @@ RELEASE/
 Thumbs.db
 .e2e-profile/
 extension/test/popup.png
+
+# Wrangler/Cloudflare pieslēgšanās dati – nekad git
+**/.wrangler/
+relay/Projects_*/

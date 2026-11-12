@@ -71,6 +71,19 @@ try {
   ok('paplašinājums ielādēts', !!extId, extId);
   await sleep(1500); // DNR noteikumi + dzinējs
 
+  // 0) Statistikas piekrišana: jautā vienreiz; līdz piekrišanai nekas netiek skaitīts
+  {
+    const page = await browser.newPage();
+    await page.goto(`chrome-extension://${extId}/popup.html`);
+    await page.waitForSelector('#consent:not([hidden])', { timeout: 4000 }).catch(() => {});
+    ok('statistikas jautājums parādās', await page.$eval('#consent', (e) => !e.hidden).catch(() => false));
+    await page.click('#consentYes');
+    await sleep(300);
+    const s = await page.evaluate(() => chrome.storage.sync.get('settings'));
+    ok('piekrišana saglabāta', s.settings?.shareStats === true);
+    await page.close();
+  }
+
   // 1) Zināms krāpnieku domēns -> DNR pāradresē uz brīdinājumu vēl pirms ielādes
   {
     const page = await newPage();
@@ -150,6 +163,9 @@ try {
     const log = await page.$$eval('#log li', (els) => els.length);
     ok('popup rāda vērtējumu', v === 'Bīstama lapa', v);
     ok('žurnālā ir ieraksti', log >= 3, `${log} ieraksti`);
+    const { statsPending } = await page.evaluate(() => chrome.storage.local.get('statsPending'));
+    ok('statistika skaita tikai skaitļus', statsPending?.blocked >= 2 && Object.keys(statsPending).length === 6, JSON.stringify(statsPending));
+    ok('jautājums vairs neparādās', await page.$eval('#consent', (e) => e.hidden));
     const brands = await page.$$eval('#rBrand option', (o) => o.length);
     ok('ziņošanas formā zīmolu saraksts', brands > 40);
     await page.screenshot({ path: resolve('test/popup.png'), fullPage: true });

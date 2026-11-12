@@ -33,10 +33,26 @@ relay/       Cloudflare Worker anonīmiem ziņojumiem (nav obligāts)
 ## Ziņošanas plūsma
 
 1. Lietotājs nospiež **Ziņot** (popup logā, ar labo klikšķi uz saites vai joslā lapā).
-2. **Ar releju**: izveidojas GitHub issue, lietotājam GitHub konts nav vajadzīgs. **Bez releja**: atveras aizpildīta GitHub issue forma.
+2. Paplašinājums nosūta ziņojumu releju serverim (`relay/`, Cloudflare Worker). Relejs izveido GitHub issue, tāpēc lietotājam GitHub konts nav vajadzīgs. Ja relejs nav pieejams, paplašinājums atver aizpildītu GitHub formu.
 3. `report-triage.yml` automātiski pievieno komentāru ar DNS, domēna vecumu (RDAP), informāciju, vai domēns jau ir sarakstā vai ir oficiāls, un, vai tajā ir zīmola nosaukums. Pievieno arī etiķetes.
 4. Uzturētājs uzliek etiķeti **`approved`**. Tad `report-apply.yml` ieraksta saiti sarakstā, izveido commit, aizver issue un palaiž publicēšanu.
 5. `data-publish.yml` uzbūvē bāzi (un pievieno OpenPhish plūsmu), **paraksta ar Ed25519** un publicē zarā `dist`. Paplašinājumi to lejupielādē ik pēc 6 h caur jsDelivr un pieņem tikai ar derīgu parakstu.
+
+## Statistika un privātums
+
+Statistiku sūta tikai tad, ja lietotājs piekrīt. Reizi dienā tiek nosūtīti tikai skaitļi (bloķēts, brīdināts, ziņots), bez saitēm un identifikatoriem. Publiskās kopsummas ir [STATS.md](STATS.md), un tās katru dienu atjaunina `stats.yml`. Pilns apraksts: [PRIVACY.md](PRIVACY.md).
+
+## Relejs (`relay/`)
+
+| | |
+|---|---|
+| Adrese | `https://urlguard-relay.urlguard-relay.workers.dev` (`/report`, `/stats`) |
+| Glabātuve | Cloudflare D1 `urlguard-stats` (shēma `relay/schema.sql`) |
+| Secret | `GITHUB_TOKEN`: fine-grained, tikai "Issues: Read and write" šim repozitorijam |
+| Publicēšana | `cd relay && node scripts/wrangler.mjs deploy` |
+| Tokena maiņa | `node scripts/wrangler.mjs secret put GITHUB_TOKEN` |
+
+`scripts/wrangler.mjs` glabā Cloudflare pieslēgšanās datus mapē `F:\Projects\_deps\wrangler\config`.
 
 ## Izstrāde
 
@@ -62,6 +78,6 @@ Būves nonāk `BUILDS/URLguard_<versija>_<chrome|firefox>_<datums>.zip`, bet nei
 3. Izveido etiķetes `report` un `approved`.
 4. Palaid workflow **Publicēt bāzi** (Actions → Run workflow). Tas izveidos zaru `dist`.
 5. Būvē paplašinājumu (`node build.mjs`, repozitorijs pēc noklusējuma `Jazekss/URLguard`).
-6. Pēc izvēles: `relay/` → `npx wrangler deploy` (bezmaksas Cloudflare). Pēc tam releja adresi ieraksta `extension/src/config.ts` → `DEFAULT_REPORT_ENDPOINT`.
+6. ✅ Relejs ir uzstādīts (skat. sadaļu "Relejs").
 
 > ⚠️ Neizdzēs `.keys/signing-private.pem`. Ja atslēga pazūd, jau instalētie paplašinājumi vairs nepieņems jaunu bāzi, kamēr neiznāks jauna versija.

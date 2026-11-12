@@ -35,6 +35,9 @@
     .msg.err { background: var(--danger-bg); color: var(--danger); }
     details summary { cursor: pointer; font-weight: 600; }
     .settings { display: grid; gap: 8px; margin-top: 10px; }
+    .consent { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+    .consent p { margin: 6px 0 10px; }
+    .row-btns { display: flex; gap: 8px; }
     .footer { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
   </style>
 </head>
@@ -45,6 +48,14 @@
     <label class="switch"><input type="checkbox" id="enabled"> Aizsardzība</label>
   </header>
   <main>
+    <section class="card consent" id="consent" hidden>
+      <b>Palīdzēsi parādīt, cik labi URLguard strādā?</b>
+      <p class="small">Reizi dienā tiktu nosūtīti <b>tikai skaitļi</b>: cik lapas bloķētas, cik brīdinājumu, cik ziņojumu.
+        <b>Bez saitēm, bez laikiem, bez identifikatoriem.</b> Var izslēgt jebkurā brīdī.
+        <a id="privacyLink" target="_blank" rel="noopener">Kas tieši tiek sūtīts?</a></p>
+      <div class="row-btns"><button class="primary" id="consentYes">Jā, palīdzēt</button><button id="consentNo">Nē, paldies</button></div>
+    </section>
+
     <section class="card status v-unknown" id="status">
       <div class="head"><span class="pill" id="verdict">…</span><span class="muted small" id="statusSrc">Šī lapa</span></div>
       <div class="host" id="host"></div>
@@ -90,6 +101,7 @@
           </label>
           <label class="row"><input type="checkbox" id="serpOfficialBadge"> Rādīt ✓ pie oficiālajām lapām</label>
           <label class="row"><input type="checkbox" id="pageChecks"> Pārbaudīt pieslēgšanās formas lapās (lokāli)</label>
+          <label class="row"><input type="checkbox" id="shareStats"> Anonīma statistika (tikai skaitļi, reizi dienā)</label>
           <label class="small">Ziņojumu serviss (nav obligāti)
             <input type="text" id="reportEndpoint" placeholder="https://…workers.dev/report">
           </label>

@@ -1,6 +1,7 @@
 import type { CheckResult } from '../core/types';
 import { getSettings, saveSettings, VERDICT_LABEL, type LogEntry, type Settings } from '../shared';
 import { submitReport } from './report';
+import { PRIVACY_URL, TARGET } from '../config';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
@@ -103,6 +104,31 @@ async function initSettings(s: Settings) {
     el.checked = s[k];
     el.onchange = () => saveSettings({ [k]: el.checked });
   }
+  // Anonīmā statistika – tikai ar piekrišanu
+  const share = $<HTMLInputElement>('shareStats');
+  share.checked = s.shareStats === true;
+  const setShare = async (on: boolean) => {
+    if (on && TARGET === 'firefox') {
+      // Firefox: iebūvētais datu vākšanas piekrišanas dialogs
+      try {
+        const ok = await chrome.permissions.request({ data_collection: ['technicalAndInteraction'] } as chrome.permissions.Permissions);
+        if (!ok) on = false;
+      } catch {
+        /* vecāka Firefox versija – pietiek ar mūsu piekrišanu */
+      }
+    }
+    await saveSettings({ shareStats: on });
+    share.checked = on;
+    $('consent').hidden = true;
+  };
+  share.onchange = () => setShare(share.checked);
+  $<HTMLAnchorElement>('privacyLink').href = PRIVACY_URL;
+  if (s.shareStats === null && !paramUrl) {
+    $('consent').hidden = false;
+    $('consentYes').onclick = () => setShare(true);
+    $('consentNo').onclick = () => setShare(false);
+  }
+
   const ep = $<HTMLInputElement>('reportEndpoint');
   ep.value = s.reportEndpoint;
   ep.onchange = () => saveSettings({ reportEndpoint: ep.value.trim() });
@@ -152,6 +178,7 @@ async function initReport(url: string | undefined, settings: Settings) {
     );
     msg.hidden = false;
     if (res.ok) {
+      chrome.runtime.sendMessage({ type: 'reportSent' });
       msg.className = 'msg ok';
       msg.textContent =
         res.via === 'relay'

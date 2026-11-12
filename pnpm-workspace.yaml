@@ -1,6 +1,9 @@
 packages:
   - extension
   - data
+  - relay
 
 allowBuilds:
   esbuild: true
+  workerd: true
+  sharp: false
