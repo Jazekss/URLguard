@@ -19,6 +19,9 @@ const PHISH_WORDS = [
   'customs', 'muita', 'unlock', 'bloket', 'confirm',
 ];
 
+/** Galotnes, kurās domēnus var reģistrēt tikai valsts iestādes – uzskatām par drošām. */
+const TRUSTED_SUFFIXES = new Set(['gov.lv', 'mil.lv', 'gov.lt', 'gov.ee', 'gov.uk', 'europa.eu']);
+
 const COUNTRY_TOKENS = new Set(['lv', 'latvija', 'latvia', 'lat', 'riga', 'gov', 'eu']);
 const TLD_LIKE = '(lv|com|gov|ee|lt|eu|net|org)';
 const AUTH_MARKERS = /smart-?id|e-?paraksts|mobile-?id|internetbank|internetbanka|personas\s?kod/i;
@@ -53,11 +56,14 @@ function matchUpTo(set: Set<string>, host: string, domain: string): string | nul
 }
 
 /** Vai `host` satur `d` kā atsevišķu daļu (pirms/pēc: sākums, beigas, '.' vai '-'). */
-function embeds(host: string, d: string): boolean {
+function embeds(host: string, d: string, brandWords: Set<string>): boolean {
+  const label = d.split('.')[0];
   for (let i = host.indexOf(d); i >= 0; i = host.indexOf(d, i + 1)) {
     const before = i === 0 ? '' : host[i - 1];
     const after = host[i + d.length] ?? '';
-    if ((before === '' || before === '.' || before === '-') && (after === '' || after === '.' || after === '-')) return true;
+    // "my-swedbank.lv" – atdarinājums; "intercom-messenger.com", "ks-live.com" – parasts vārds, nejaušība
+    const beforeOk = before === '' || before === '.' || (before === '-' && brandWords.has(norm(label)));
+    if (beforeOk && (after === '' || after === '.' || after === '-')) return true;
   }
   return false;
 }
@@ -68,6 +74,8 @@ export class Engine {
   private officialSet = new Set<string>();
   /** Zīmola oficiālo domēnu publiskās galotnes (lv, gov.lv, com …). */
   private officialSuffixes = new Map<string, Set<string>>();
+  private anyTld = new Map<string, Brand>();
+  private brandWords = new Map<string, Set<string>>();
   private allow: Set<string>;
   private block: Set<string>;
   private blockUrls: string[];
@@ -80,6 +88,8 @@ export class Engine {
     for (const b of bundle.brands) {
       this.brandIds.set(b.id, b);
       for (const d of b.official) this.official.set(d.toLowerCase(), b);
+      for (const l of b.anyTld ?? []) this.anyTld.set(l.toLowerCase(), b);
+      this.brandWords.set(b.id, new Set([...b.keywords, ...(b.strictKeywords ?? [])].map(norm)));
       this.officialSuffixes.set(b.id, new Set(b.official.map((d) => parse(d).publicSuffix ?? '')));
       for (const k of b.keywords) {
         const n = norm(k);
@@ -96,6 +106,19 @@ export class Engine {
     this.block = new Set(bundle.blocklist.domains.map((d) => d.toLowerCase()));
     this.blockUrls = bundle.blocklist.urls.map((u) => u.toLowerCase());
     this.shared = bundle.sharedHosting.map((d) => d.toLowerCase());
+  }
+
+  /**
+   * Drukas kļūda: 1 atšķirība (>=11 burti – 2); 6–7 burti – tikai ar oficiālo vai aizdomīgu galotni;
+   * īsāki vārdi – nekad (mail≈gmail, telex≈tele2, pcloud≈icloud dod pārāk daudz kļūdainu brīdinājumu).
+   */
+  private isTypo(e: KwEntry, dNorm: string, dTokens: string[], suffix: string, tld: string): boolean {
+    const n = e.kw.length;
+    if (e.strict || n < 6) return false;
+    if (n <= 7 && !(this.officialSuffixes.get(e.brand.id)?.has(suffix) || SUSPICIOUS_TLDS.has(tld))) return false;
+    const max = n >= 11 ? 2 : 1;
+    if (dNorm !== e.kw && levenshtein(dNorm, e.kw, max) <= max) return true;
+    return dTokens.some((t) => t !== e.kw && t.length >= n - 1 && levenshtein(t, e.kw, 1) <= 1);
   }
 
   get brands(): Brand[] {
@@ -141,14 +164,19 @@ export class Engine {
     if (this.blockUrls.some((b) => key.startsWith(b))) {
       return { ...base, domain, verdict: 'danger', score: 100, listed: 'url', reasons: [this.reason('blocklist', {})] };
     }
-    // 2) Oficiālie zīmolu domēni
-    const off = matchUpTo(this.officialSet, host, domain);
-    if (off) {
-      const b = this.official.get(off)!;
+    // 2) Oficiālie zīmolu domēni (līdz ICANN domēnam: googleapis.com, withgoogle.com ir "privātas galotnes")
+    const icann = parse(host);
+    const icannDomain = icann.domain ?? domain;
+    const off = matchUpTo(this.officialSet, host, icannDomain);
+    const anyTldBrand = icann.domainWithoutSuffix ? this.anyTld.get(icann.domainWithoutSuffix) : undefined;
+    if (off || anyTldBrand) {
+      const b = off ? this.official.get(off)! : anyTldBrand!;
       return { ...base, domain, verdict: 'official', score: 0, reasons: [], brand: ref(b) };
     }
-    // 3) Baltais saraksts
-    if (matchUpTo(this.allow, host, domain)) return { ...base, domain, verdict: 'safe', score: 0, reasons: [] };
+    // 3) Baltais saraksts un valsts galotnes (gov.lv u.c.)
+    if (matchUpTo(this.allow, host, icannDomain) || TRUSTED_SUFFIXES.has(icann.publicSuffix ?? '') || host === 'europa.eu' || host.endsWith('.europa.eu')) {
+      return { ...base, domain, verdict: 'safe', score: 0, reasons: [] };
+    }
     // 4) Bloķētie domēni
     if (matchUpTo(this.block, host, domain)) {
       return { ...base, domain, verdict: 'danger', score: 100, listed: 'domain', reasons: [this.reason('blocklist', {})] };
@@ -186,11 +214,7 @@ export class Engine {
       else if (dTokens.includes(e.kw)) [s, code] = [50, 'brand-in-domain'];
       else if (dNorm.includes(e.kw)) [s, code] = [45, 'brand-in-domain'];
       else if (dSkel.includes(e.skel)) [s, code] = [65, 'homoglyph'];
-      else if (
-        e.kw.length >= 5 &&
-        (levenshtein(dNorm, e.kw, e.kw.length >= 9 ? 2 : 1) <= (e.kw.length >= 9 ? 2 : 1) ||
-          dTokens.some((t) => t.length >= 5 && levenshtein(t, e.kw, 1) <= 1))
-      ) {
+      else if (this.isTypo(e, dNorm, dTokens, p.publicSuffix ?? '', tld)) {
         // drukas kļūda + tā pati galotne kā oficiālajam (swedbamk.lv, steamcommunlty.com) = ļoti aizdomīgi
         const sameTld = this.officialSuffixes.get(e.brand.id)?.has(p.publicSuffix ?? '-') ?? false;
         [s, code] = [sameTld ? 70 : 55, 'typosquat'];
@@ -201,11 +225,13 @@ export class Engine {
       if (s > 0 && new RegExp(`(^|[.-])${e.kw}[.-]${TLD_LIKE}[.-]`).test(hostPlain) && s < 70) {
         [s, code] = [70, 'fake-domain-prefix'];
       }
+      // Globālie zīmoli paši lieto daudz domēnu ar savu nosaukumu – nosaukums vien = vājš signāls
+      if (e.brand.weak && (code === 'brand-in-domain' || code === 'brand-in-subdomain')) s = Math.min(s, 30);
       if (s > 0) consider({ brand: e.brand, score: s, code });
     }
     // Iestrādāts oficiālais domēns: "swedbank.lv-secure.com", "eveseliba.gov.lv.abc.xyz"
     for (const [offDomain, b] of this.official) {
-      if (offDomain.length >= 6 && embeds(hostPlain, offDomain)) consider({ brand: b, score: 75, code: 'official-embedded' });
+      if (offDomain.length >= 6 && embeds(hostPlain, offDomain, this.brandWords.get(b.id)!)) consider({ brand: b, score: 75, code: 'official-embedded' });
     }
 
     let score = 0;

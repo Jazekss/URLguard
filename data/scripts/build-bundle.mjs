@@ -68,8 +68,9 @@ export async function buildBundle({ feeds = false } = {}) {
   return {
     version: SCHEMA_VERSION,
     generated: new Date().toISOString(),
-    brands: brands.map(({ id, name, category, url, official, keywords, strictKeywords, region }) => ({
-      id, name, category, url, official, keywords, ...(strictKeywords ? { strictKeywords } : {}), region,
+    brands: brands.map(({ id, name, category, url, official, keywords, strictKeywords, anyTld, weak, region }) => ({
+      id, name, category, url, official, keywords,
+      ...(strictKeywords ? { strictKeywords } : {}), ...(anyTld ? { anyTld } : {}), ...(weak ? { weak } : {}), region,
     })),
     blocklist: { domains, urls },
     allowlist,

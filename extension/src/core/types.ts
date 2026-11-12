@@ -13,6 +13,10 @@ export interface Brand {
   keywords: string[];
   /** Īsi/divdomīgi vārdi (seb, lmt, vid): tikai precīzs domēna "tokens". */
   strictKeywords?: string[];
+  /** Nosaukumi, kas oficiāli ar jebkuru galotni (google.ca, google.com.hk, microsoft.us). Tikai globāliem zīmoliem. */
+  anyTld?: string[];
+  /** Zīmols pats lieto daudzus domēnus ar savu nosaukumu (googlesource.com) – nosaukums domēnā vien nav pietiekams signāls. */
+  weak?: boolean;
   region?: string;
 }
 
