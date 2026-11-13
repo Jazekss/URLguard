@@ -32,3 +32,4 @@ bolt.new  # StackBlitz, nav Bolt
 whats-on-netflix.com  # fanu ziņu portāls
 electrum.org  # Bitcoin maciņš, nav Elektrum
 citadel.edu  # universitāte, nav Citadele
+google.lv  # #8
