@@ -1,7 +1,7 @@
 # URLguard – store listing (English)
 
 ## Name
-URLguard – phishing link protection
+URLguard – phishing protection
 
 ## Short description (≤132 characters)
 Warns when a link only pretends to be your bank or a government site. Flags scam ads in search. Free, works locally.

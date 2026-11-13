@@ -1,5 +1,5 @@
 {
-  "ext.name": "URLguard – phishing link protection",
+  "ext.name": "URLguard – phishing protection",
   "ext.desc": "Warns when a link only pretends to be your bank or a government site. Flags scam ads in search. Free, works locally.",
 
   "popup.protection": "Protection",

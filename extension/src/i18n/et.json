@@ -1,5 +1,5 @@
 {
-  "ext.name": "URLguard – kaitse petulinkide eest",
+  "ext.name": "URLguard – petulinkide kaitse",
   "ext.desc": "Hoiatab, kui link teeskleb olevat pank või riigiportaal. Märgib petureklaamid otsingus. Tasuta, töötab kohapeal.",
 
   "popup.protection": "Kaitse",

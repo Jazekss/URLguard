@@ -1,7 +1,7 @@
 # URLguard – veikala apraksts (latviski)
 
 ## Nosaukums
-URLguard – aizsardzība pret krāpnieku saitēm
+URLguard – krāpnieku bloķētājs
 
 ## Īsais apraksts (≤132 simboli, Chrome / Edge / Firefox)
 Brīdina, ja saite tikai izliekas par banku, e-veselību vai VID. Atzīmē krāpnieku reklāmas meklētājā. Bez maksas, darbojas lokāli.

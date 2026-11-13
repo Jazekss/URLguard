@@ -1,5 +1,5 @@
 {
-  "ext.name": "URLguard – aizsardzība pret krāpnieku saitēm",
+  "ext.name": "URLguard – krāpnieku bloķētājs",
   "ext.desc": "Brīdina, ja saite tikai izliekas par banku, e-veselību vai VID. Atzīmē krāpnieku reklāmas meklētājā. Bez maksas, darbojas lokāli.",
 
   "popup.protection": "Aizsardzība",

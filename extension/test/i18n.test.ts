@@ -23,7 +23,7 @@ describe('tulkojumi', () => {
 
   it.each(Object.keys(ALL))('%s: apraksts veikalam ≤132 simboli', (code) => {
     expect(ALL[code]['ext.desc'].length).toBeLessThanOrEqual(132);
-    expect(ALL[code]['ext.name'].length).toBeLessThanOrEqual(75);
+    expect(ALL[code]['ext.name'].length).toBeLessThanOrEqual(30); // Firefox AMO limits
   });
 
   it('katram dzinēja iemeslam ir tulkojums', () => {
