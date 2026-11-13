@@ -24,7 +24,8 @@ export interface Bundle {
   version: number;
   generated: string;
   brands: Brand[];
-  blocklist: { domains: string[]; urls: string[] };
+  /** suspect (1.2.0+): domēni tikai vienā publiskā krāpnieku sarakstā -> "aizdomīgs", ne bloķēts. */
+  blocklist: { domains: string[]; urls: string[]; suspect?: string[] };
   allowlist: string[];
   sharedHosting: string[];
 }

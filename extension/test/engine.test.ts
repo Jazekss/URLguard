@@ -71,6 +71,30 @@ describe('krāpnieku paraugi', () => {
   });
 });
 
+describe('publiskie krāpnieku saraksti', () => {
+  const e = new Engine({
+    ...bundle,
+    blocklist: { ...bundle.blocklist, suspect: ['random-shop-deals.com', 'citadele-bloketa.com', 'evil.duckdns.org'] },
+  });
+  it('tikai sarakstā -> aizdomīgs', () => {
+    const r = e.check('https://random-shop-deals.com/');
+    expect(r.verdict).toBe('suspicious');
+    expect(r.reasons.map((x) => x.code)).toContain('feed-listed');
+  });
+  it('sarakstā + zīmola atdarinājums -> bīstams', () => {
+    expect(e.check('https://citadele-bloketa.com/login').verdict).toBe('danger');
+  });
+  it('apakšdomēns uz koplietojama hostinga', () => {
+    expect(e.check('https://evil.duckdns.org/x').verdict).not.toBe('unknown');
+    expect(e.check('https://other.duckdns.org/').verdict).toBe('unknown');
+  });
+  it('oficiāls un baltais saraksts vienmēr uzvar', () => {
+    const e2 = new Engine({ ...bundle, blocklist: { ...bundle.blocklist, suspect: ['swedbank.lv', 'lsm.lv'] } });
+    expect(e2.check('https://www.swedbank.lv/').verdict).toBe('official');
+    expect(e2.check('https://lsm.lv/').verdict).toBe('safe');
+  });
+});
+
 describe('saderība ar vecākām versijām', () => {
   it('google.lv ir oficiāls arī dzinējam, kas nepazīst anyTld', () => {
     const old = structuredClone(bundle);

@@ -93,6 +93,7 @@
   "menu.check": "URLguard: check link",
   "menu.report": "URLguard: report phishing link",
 
+  "reason.feed-listed": "The address is on a public phishing list (not yet confirmed).",
   "reason.blocklist": "The address is on the list of known phishing sites.",
   "reason.official-embedded": "The address contains the official {brand} domain, but the page is actually somewhere else ({domain}).",
   "reason.fake-domain-prefix": "The address starts like a {brand} page, but the real domain is {domain}.",

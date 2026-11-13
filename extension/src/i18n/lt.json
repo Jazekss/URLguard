@@ -93,6 +93,7 @@
   "menu.check": "URLguard: patikrinti nuorodą",
   "menu.report": "URLguard: pranešti apie sukčių nuorodą",
 
+  "reason.feed-listed": "Adresas yra viešame sukčių sąraše (dar nepatvirtinta).",
   "reason.blocklist": "Adresas yra žinomų sukčių svetainių sąraše.",
   "reason.official-embedded": "Adrese įterptas oficialus {brand} domenas, bet puslapis iš tikrųjų yra kitur ({domain}).",
   "reason.fake-domain-prefix": "Adresas prasideda kaip {brand} puslapis, bet tikrasis domenas yra {domain}.",

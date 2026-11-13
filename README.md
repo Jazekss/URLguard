@@ -55,6 +55,18 @@ Statistiku sūta tikai tad, ja lietotājs piekrīt. Reizi dienā tiek nosūtīti
 
 `scripts/wrangler.mjs` glabā Cloudflare pieslēgšanās datus mapē `F:\Projects\_deps\wrangler\config`.
 
+## Saraksts citiem rīkiem
+
+Mūsu cilvēku pārbaudītie krāpnieku domēni tiek publicēti katru dienu. Tos var pievienot savam rīkam ar vienu saiti:
+
+| Rīks | Saite |
+|---|---|
+| AdGuard, uBlock Origin | `https://cdn.jsdelivr.net/gh/Jazekss/URLguard@dist/lists/adguard.txt` |
+| Pi-hole, hosts fails | `https://cdn.jsdelivr.net/gh/Jazekss/URLguard@dist/lists/hosts.txt` |
+| NextDNS, citi (tikai domēni) | `https://cdn.jsdelivr.net/gh/Jazekss/URLguard@dist/lists/domains.txt` |
+
+Ārējo plūsmu (OpenPhish, Phishing.Database, Phishing Army) dati šajos sarakstos **nav iekļauti**. Tie tiek izmantoti tikai paplašinājumā, pēc šāda likuma: bloķē, ja domēns ir vismaz divos sarakstos; ja tikai vienā sarakstā un adresē ir zīmola nosaukums, tas ir aizdomīgs. Populārās lapas un `.gov.lv` nekad netiek bloķētas. Baltijas domēni, kas ir tikai vienā sarakstā, nonāk `review.txt` pārbaudei ar roku.
+
 ## Valodas
 
 Saskarne ir pieejama latviešu, angļu, krievu, lietuviešu un igauņu valodā. Pēc noklusējuma tiek izmantota pārlūka valoda, un to var mainīt iestatījumos.

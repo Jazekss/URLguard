@@ -1,6 +1,9 @@
 {
-  "_comment": "Ārējās krāpnieku plūsmas, ko CI katru dienu apvieno ar mūsu sarakstu. Pirms ieslēgšanas pārbaudi licenci.",
+  "_comment": "Ārējās krāpnieku plūsmas. trust=high – bloķē uzreiz; normal – bloķē tikai, ja domēns ir >=2 sarakstos (citādi 'aizdomīgs' Baltijas/zīmola domēniem). Populārie (Tranco top popularTop) nekad netiek bloķēti.",
+  "popularTop": 100000,
   "feeds": [
-    { "name": "OpenPhish Community", "url": "https://openphish.com/feed.txt", "format": "urls", "enabled": true, "max": 20000 }
+    { "name": "OpenPhish Community", "url": "https://openphish.com/feed.txt", "format": "urls", "trust": "high", "license": "OpenPhish Community Feed (bezmaksas)", "enabled": true },
+    { "name": "Phishing.Database", "url": "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-domains-ACTIVE.txt", "format": "domains", "trust": "normal", "license": "MIT", "enabled": true },
+    { "name": "Phishing Army", "url": "https://phishing.army/download/phishing_army_blocklist.txt", "format": "domains", "trust": "normal", "license": "CC BY-NC 4.0 – tikai nekomerciāli (izslēgt, ja parādās maksas plāni)", "enabled": true }
   ]
 }

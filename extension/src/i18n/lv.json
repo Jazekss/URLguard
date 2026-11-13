@@ -93,6 +93,7 @@
   "menu.check": "URLguard: pārbaudīt saiti",
   "menu.report": "URLguard: ziņot par krāpniecisku saiti",
 
+  "reason.feed-listed": "Adrese ir publiskā krāpnieku sarakstā (vēl nav apstiprināta).",
   "reason.blocklist": "Adrese ir zināmo krāpniecisko vietņu sarakstā.",
   "reason.official-embedded": "Adresē iestrādāts {brand} oficiālais domēns, bet lapa patiesībā atrodas citur ({domain}).",
   "reason.fake-domain-prefix": "Adrese sākas kā {brand} lapa, bet īstais domēns ir {domain}.",

@@ -93,6 +93,7 @@
   "menu.check": "URLguard: kontrolli linki",
   "menu.report": "URLguard: teata petulingist",
 
+  "reason.feed-listed": "Aadress on avalikus petulehtede nimekirjas (veel kinnitamata).",
   "reason.blocklist": "Aadress on teadaolevate petulehtede nimekirjas.",
   "reason.official-embedded": "Aadressi on lisatud {brand} ametlik domeen, kuid leht asub tegelikult mujal ({domain}).",
   "reason.fake-domain-prefix": "Aadress algab nagu {brand} leht, kuid tegelik domeen on {domain}.",

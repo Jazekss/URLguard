@@ -25,3 +25,23 @@ square.site
 godaddysites.com
 mystrikingly.com
 jimdosite.com
+
+# E-pasta sūtīšanas servisu saišu domēni (likumīgi jaunumu e-pasti) – bloķē tikai konkrētu saiti
+mailersend.net
+sendgrid.net
+list-manage.com
+mailchi.mp
+mandrillapp.com
+mailgun.org
+sparkpostmail.com
+rs6.net
+hubspotlinks.com
+hs-sites.com
+exacttarget.com
+klclick.com
+klclick1.com
+brevo.com
+sendibt3.com
+r.mailjet.com
+mjt.lu
+smore.com

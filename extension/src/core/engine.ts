@@ -78,6 +78,7 @@ export class Engine {
   private brandWords = new Map<string, Set<string>>();
   private allow: Set<string>;
   private block: Set<string>;
+  private suspect: Set<string>;
   private blockUrls: string[];
   private shared: string[];
   private kws: KwEntry[] = [];
@@ -104,6 +105,7 @@ export class Engine {
     this.officialSet = new Set(this.official.keys());
     this.allow = new Set(bundle.allowlist.map((d) => d.toLowerCase()));
     this.block = new Set(bundle.blocklist.domains.map((d) => d.toLowerCase()));
+    this.suspect = new Set((bundle.blocklist.suspect ?? []).map((d) => d.toLowerCase()));
     this.blockUrls = bundle.blocklist.urls.map((u) => u.toLowerCase());
     this.shared = bundle.sharedHosting.map((d) => d.toLowerCase());
   }
@@ -252,6 +254,12 @@ export class Engine {
         score = 45;
         reasons.push(this.reason('ad-impersonation', { brand, domain }));
       }
+    }
+
+    // Publiskā krāpnieku sarakstā (tikai vienā avotā) – pats par sevi "aizdomīgs"; kopā ar atdarinājumu – "bīstams"
+    if (this.suspect.size && matchUpTo(this.suspect, host, host.split('.').slice(-2).join('.'))) {
+      score += 45;
+      reasons.push(this.reason('feed-listed', {}));
     }
 
     const mixed = uniHost.split('.').some(hasMixedScript);
