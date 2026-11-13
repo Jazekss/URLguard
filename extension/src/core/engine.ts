@@ -56,12 +56,14 @@ function matchUpTo(set: Set<string>, host: string, domain: string): string | nul
 }
 
 /** Vai `host` satur `d` kā atsevišķu daļu (pirms/pēc: sākums, beigas, '.' vai '-'). */
-function embeds(host: string, d: string, brandWords: Set<string>): boolean {
+function embeds(host: string, d: string, brandWords: Set<string>, globalBrand = false): boolean {
   const label = d.split('.')[0];
   for (let i = host.indexOf(d); i >= 0; i = host.indexOf(d, i + 1)) {
     const before = i === 0 ? '' : host[i - 1];
     const after = host[i + d.length] ?? '';
     // "my-swedbank.lv" – atdarinājums; "intercom-messenger.com", "ks-live.com" – parasts vārds, nejaušība
+    // Īss globāla zīmola vārds (Apple me.com -> me.com.br) – nejaušība; vietējiem (ss.lv, lg.lv) – atdarinājums
+    if (label.length < 4 && globalBrand && !brandWords.has(norm(label))) return false;
     const beforeOk = before === '' || before === '.' || (before === '-' && brandWords.has(norm(label)));
     if (beforeOk && (after === '' || after === '.' || after === '-')) return true;
   }
@@ -208,7 +210,7 @@ export class Engine {
       let s = 0;
       let code = '';
       if (e.strict) {
-        if (dSkel === e.skel && dNorm !== e.kw) [s, code] = [70, 'homoglyph'];
+        if (e.kw.length >= 4 && dSkel === e.skel && dNorm !== e.kw) [s, code] = [70, 'homoglyph'];
         else if (dTokens.includes(e.kw)) [s, code] = [45, 'brand-in-domain'];
         else if (subTokens.includes(e.kw)) [s, code] = [35, 'brand-in-subdomain'];
       } else if (dNorm === e.kw) [s, code] = [60, 'brand-other-tld'];
@@ -219,7 +221,7 @@ export class Engine {
       else if (this.isTypo(e, dNorm, dTokens, p.publicSuffix ?? '', tld)) {
         // drukas kļūda + tā pati galotne kā oficiālajam (swedbamk.lv, steamcommunlty.com) = ļoti aizdomīgi
         const sameTld = this.officialSuffixes.get(e.brand.id)?.has(p.publicSuffix ?? '-') ?? false;
-        [s, code] = [sameTld ? 70 : 55, 'typosquat'];
+        [s, code] = [sameTld && e.kw.length >= 8 ? 70 : 55, 'typosquat'];
       }
       else if (subTokens.includes(e.kw) || subNorm.includes(e.kw)) [s, code] = [40, 'brand-in-subdomain'];
 
@@ -233,7 +235,7 @@ export class Engine {
     }
     // Iestrādāts oficiālais domēns: "swedbank.lv-secure.com", "eveseliba.gov.lv.abc.xyz"
     for (const [offDomain, b] of this.official) {
-      if (offDomain.length >= 6 && embeds(hostPlain, offDomain, this.brandWords.get(b.id)!)) consider({ brand: b, score: 75, code: 'official-embedded' });
+      if (offDomain.length >= 6 && embeds(hostPlain, offDomain, this.brandWords.get(b.id)!, !!b.weak)) consider({ brand: b, score: 75, code: 'official-embedded' });
     }
 
     let score = 0;

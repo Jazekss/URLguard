@@ -31,6 +31,7 @@ describe('oficiālās un drošās lapas', () => {
 
   it('nepazīstamas parastas lapas nebrīdina', () => {
     for (const u of [
+      'https://vid.me/', 'https://www.bolt.com/', 'https://me.com.br/', 'https://1mt.ru/',
       'https://www.example.com/', 'https://cooking-recipes.lv/',
       'https://videoclips.com/', 'https://sebastians.lv/', 'https://industrial-parts.com/', 'https://pineapple.com/',
       'https://hotel-booking.lv/', 'https://localhost:3000/', 'http://192.168.1.1/',
@@ -102,6 +103,9 @@ describe('saderība ar vecākām versijām', () => {
     const e = new Engine(old);
     for (const u of ['https://accounts.google.lv/accounts/SetSID', 'https://www.google.de/', 'https://www.dpd.de/', 'https://tele2.se/'])
       expect(e.check(u).verdict, u).toBe('official');
+  });
+  it('youtube.com.br – oficiāls', () => {
+    expect(v('https://www.youtube.com.br/')).toBe('official');
   });
   it('accounts.google.lv – oficiāls (lietotāja ziņojums)', () => {
     expect(v('https://accounts.google.lv/accounts/SetSID?ssdc=1&continue=https://myaccount.google.com/')).toBe('official');

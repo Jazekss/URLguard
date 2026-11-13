@@ -30,3 +30,5 @@ veseliba.lv  # #4
 # Populāru lapu skenēšana (Tranco top 50k + .lv/.lt/.ee), 2026-11-12
 bolt.new  # StackBlitz, nav Bolt
 whats-on-netflix.com  # fanu ziņu portāls
+electrum.org  # Bitcoin maciņš, nav Elektrum
+citadel.edu  # universitāte, nav Citadele
