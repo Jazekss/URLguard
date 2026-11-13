@@ -1,6 +1,7 @@
 {
   "name": "urlguard",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "pnpm --filter ./extension run build",

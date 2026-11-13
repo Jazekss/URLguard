@@ -109,3 +109,9 @@ Būves nonāk `BUILDS/URLguard_<versija>_<chrome|firefox>_<datums>.zip`, bet nei
 6. ✅ Relejs ir uzstādīts (skat. sadaļu "Relejs").
 
 > ⚠️ Neizdzēs `.keys/signing-private.pem`. Ja atslēga pazūd, jau instalētie paplašinājumi vairs nepieņems jaunu bāzi, kamēr neiznāks jauna versija.
+
+## Licence
+
+- **Kods** (paplašinājums, relejs, skripti): [MIT](LICENSE). To drīkst brīvi izmantot, mainīt un izplatīt, arī komerciāli, ja tiek saglabāts autortiesību paziņojums.
+- **Projekta dati** (zīmoli, pārbaudītie saraksti, publiskie `lists/*.txt`): [CC0 1.0](data/LICENSE.md), tas ir, publiskais īpašums.
+- **Ārējo plūsmu dati** paplašinājuma bāzē paliek savās licencēs (skatīt [data/LICENSE.md](data/LICENSE.md)).

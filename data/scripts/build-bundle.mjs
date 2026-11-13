@@ -183,6 +183,7 @@ export function writePublicLists(out) {
       `${c} Report: https://github.com/Jazekss/URLguard/issues/new?template=report.yml`,
       `${c} Last modified: ${now}`,
       `${c} Entries: ${domains.length}`,
+      `${c} License: CC0-1.0 (public domain) – https://creativecommons.org/publicdomain/zero/1.0/`,
       `${c} Expires: 1 day`,
     ].join('\n');
   mkdirSync(join(out, 'lists'), { recursive: true });

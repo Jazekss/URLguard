@@ -1,6 +1,7 @@
 {
   "name": "urlguard-data",
   "private": true,
+  "license": "MIT AND CC0-1.0",
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate.mjs",
