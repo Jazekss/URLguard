@@ -1,5 +1,6 @@
 import type { CheckResult } from '../core/types';
-import { getSettings, saveSettings, VERDICT_LABEL, type LogEntry, type Settings } from '../shared';
+import { getSettings, saveSettings, type LogEntry, type Settings } from '../shared';
+import { applyDom, lang, LANGS, locale, reasonText, setLang, t } from '../i18n';
 import { submitReport } from './report';
 import { PRIVACY_URL, TARGET } from '../config';
 
@@ -34,20 +35,20 @@ function renderStatus(r: CheckResult | null, url?: string) {
   const box = $('status');
   const v = r?.verdict ?? 'unknown';
   box.className = `card status v-${v}`;
-  $('statusSrc').textContent = paramUrl ? 'Pārbaudītā saite' : 'Šī lapa';
+  $('statusSrc').textContent = t(paramUrl ? 'status.checkedLink' : 'status.thisPage');
   const http = !!url && /^https?:/.test(url);
-  $('verdict').textContent = http ? VERDICT_LABEL[v] : 'Netiek pārbaudīta';
+  $('verdict').textContent = http ? t(`verdict.${v}`) : t('status.notChecked');
   $('host').textContent = r?.host || (url ? url.slice(0, 80) : '—');
   const ul = $('reasons');
   ul.innerHTML = '';
   for (const reason of r?.reasons ?? []) {
     const li = document.createElement('li');
-    li.textContent = reason.text;
+    li.textContent = reasonText(reason);
     ul.append(li);
   }
   if (r?.verdict === 'official' && r.brand) {
     const li = document.createElement('li');
-    li.textContent = `Šī ir ${r.brand.name} oficiālā lapa.`;
+    li.textContent = t('status.officialOf', { brand: r.brand.name });
     ul.append(li);
   }
   if (r?.brand && r.verdict !== 'official') {
@@ -66,21 +67,18 @@ function renderLog(log: LogEntry[]) {
   $('statTotal').textContent = String(log.filter((l) => l.action !== 'bypassed').length);
   const ul = $('log');
   ul.innerHTML = '';
-  const actionText: Record<LogEntry['action'], string> = {
-    blocked: 'bloķēta', warned: 'brīdinājums', hidden: 'paslēpta', marked: 'atzīmēta', bypassed: 'atvērta tomēr',
-  };
   for (const l of log.slice(0, 40)) {
     const li = document.createElement('li');
     const time = document.createElement('span');
     time.className = 'muted';
-    time.textContent = new Date(l.t).toLocaleString('lv-LV', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    time.textContent = new Date(l.t).toLocaleString(locale(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
     const h = document.createElement('span');
     h.className = 'h mono';
     h.textContent = l.host;
-    h.title = `${l.url}${l.brand ? `\nIzliekas par: ${l.brand}` : ''}`;
+    h.title = `${l.url}${l.brand ? `\n${t('log.pretends', { brand: l.brand })}` : ''}`;
     const pill = document.createElement('span');
     pill.className = `pill v-${l.action === 'bypassed' ? 'unknown' : l.verdict}`;
-    pill.textContent = actionText[l.action];
+    pill.textContent = t(`log.${l.action}`);
     li.append(time, h, pill);
     ul.append(li);
   }
@@ -88,11 +86,20 @@ function renderLog(log: LogEntry[]) {
 }
 
 function renderData(d: Status['data']) {
-  const date = new Date(d.generated).toLocaleDateString('lv-LV');
-  $('dataInfo').textContent = `Bāze: ${date} · ${d.brands} zīmoli · ${d.domains} bloķēti${d.repoConfigured ? '' : ' · (repo nav iestatīts)'}`;
+  const date = new Date(d.generated).toLocaleDateString(locale());
+  $('dataInfo').textContent =
+    t('data.info', { date, brands: d.brands, domains: d.domains }) + (d.repoConfigured ? '' : ` · ${t('update.notConfigured')}`);
 }
 
 async function initSettings(s: Settings) {
+  // Valoda: maiņa uzreiz pārzīmē popup
+  const langSel = $<HTMLSelectElement>('lang');
+  for (const [code, name] of Object.entries(LANGS)) langSel.add(new Option(name, code));
+  langSel.value = s.lang || 'auto';
+  langSel.onchange = async () => {
+    await saveSettings({ lang: langSel.value });
+    location.reload();
+  };
   const enabled = $<HTMLInputElement>('enabled');
   enabled.checked = s.enabled;
   enabled.onchange = () => saveSettings({ enabled: enabled.checked });
@@ -135,12 +142,12 @@ async function initSettings(s: Settings) {
   $('updateNow').onclick = async () => {
     const b = $<HTMLButtonElement>('updateNow');
     b.disabled = true;
-    b.textContent = 'Atjaunina…';
+    b.textContent = t('settings.updating');
     const r = await chrome.runtime.sendMessage({ type: 'updateNow' });
-    const text: Record<string, string> = {
-      updated: 'Atjaunināts ✓', 'up-to-date': 'Jau jaunākā ✓', failed: 'Neizdevās', 'not-configured': 'Repo nav iestatīts',
+    const key: Record<string, string> = {
+      updated: 'update.updated', 'up-to-date': 'update.upToDate', failed: 'update.failed', 'not-configured': 'update.notConfigured',
     };
-    b.textContent = text[r] ?? String(r);
+    b.textContent = key[r] ? t(key[r]) : String(r);
     const st = (await chrome.runtime.sendMessage({ type: 'getStatus' })) as Status;
     renderData(st.data);
   };
@@ -159,7 +166,7 @@ async function initReport(url: string | undefined, settings: Settings) {
   if (params.get('kind') === 'fp') (document.querySelector('input[value=false_positive]') as HTMLInputElement).checked = true;
   const brands = (await chrome.runtime.sendMessage({ type: 'getBrands' })) as { id: string; name: string }[];
   const sel = $<HTMLSelectElement>('rBrand');
-  for (const b of brands.sort((a, b) => a.name.localeCompare(b.name, 'lv'))) sel.add(new Option(b.name, b.name));
+  for (const b of brands.sort((a, b) => a.name.localeCompare(b.name, lang()))) sel.add(new Option(b.name, b.name));
   $('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = $<HTMLButtonElement>('rSend');
@@ -181,12 +188,10 @@ async function initReport(url: string | undefined, settings: Settings) {
       chrome.runtime.sendMessage({ type: 'reportSent' });
       msg.className = 'msg ok';
       msg.textContent =
-        res.via === 'relay'
-          ? 'Paldies! Ziņojums nosūtīts pārbaudei.'
-          : 'Atvērta GitHub forma – pārbaudiet un nospiediet “Submit new issue”.';
+        res.via === 'relay' ? t('report.ok') : t('report.okGithub');
     } else {
       msg.className = 'msg err';
-      msg.textContent = `Neizdevās: ${res.error}`;
+      msg.textContent = t('report.fail', { error: res.error });
       btn.disabled = false;
     }
   };
@@ -196,6 +201,8 @@ async function initReport(url: string | undefined, settings: Settings) {
 async function main() {
   if (paramUrl) document.body.classList.add('window');
   const [url, settings] = await Promise.all([currentUrl(), getSettings()]);
+  setLang(settings.lang);
+  applyDom();
   const st = (await chrome.runtime.sendMessage({
     type: 'getStatus',
     url: url && /^https?:/.test(url) ? url : undefined,

@@ -41,4 +41,4 @@ Edge: Productivity
 Firefox: Privacy & Security
 
 ## Valoda
-Latviešu (galvenā), angļu
+Latviešu, angļu, krievu, lietuviešu, igauņu (valodu var izvēlēties iestatījumos)

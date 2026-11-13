@@ -1,6 +1,7 @@
 // Meklētāja lapā: atzīmē vai paslēpj krāpnieku saites, oficiālajām pieliek ✓.
 import { getQuery, scan, type SerpItem } from './serp-scan';
 import type { SerpItemOut } from '../shared';
+import { initLang, reasonText, t } from '../i18n';
 
 const DONE = 'urlguardDone';
 let hiddenCount = 0;
@@ -51,7 +52,7 @@ function marker(kind: MarkKind, tip: string): HTMLElement {
 }
 
 function tipText(head: string, r: SerpItemOut['result']): string {
-  return ['URLguard: ' + head, ...r.reasons.map((x) => '• ' + x.text)].join('\n');
+  return ['URLguard: ' + head, ...r.reasons.map((x) => '• ' + reasonText(x))].join('\n');
 }
 
 /** Kur ielikt ikonu: virsraksta sākumā (h3 / role=heading), citādi saites sākumā. */
@@ -68,10 +69,10 @@ function ensureNotice(container: Element) {
     container.prepend(notice);
   }
   notice.innerHTML = '';
-  const t = document.createElement('span');
-  t.textContent = `🛡 URLguard paslēpa ${hiddenCount} krāpniecisku saiti${hiddenCount === 1 ? '' : 'es'}. `;
+  const label = document.createElement('span');
+  label.textContent = t('serp.hidden', { n: hiddenCount }) + ' ';
   const btn = document.createElement('button');
-  btn.textContent = 'Parādīt';
+  btn.textContent = t('serp.show');
   btn.style.cssText = 'border:0;background:none;color:#b91c1c;text-decoration:underline;cursor:pointer;font:inherit;padding:0';
   btn.onclick = () => {
     document.querySelectorAll<HTMLElement>('[data-urlguard-hidden]').forEach((e) => {
@@ -82,7 +83,7 @@ function ensureNotice(container: Element) {
     notice = null;
     hiddenCount = 0;
   };
-  notice.append(t, btn);
+  notice.append(label, btn);
 }
 
 function apply(item: SerpItem, res: SerpItemOut, mode: 'mark' | 'hide', officialBadge: boolean) {
@@ -102,11 +103,11 @@ function apply(item: SerpItem, res: SerpItemOut, mode: 'mark' | 'hide', official
     block.style.outline = '2px solid #dc2626';
     block.style.outlineOffset = '6px';
     block.style.borderRadius = '10px';
-    placeMarker(item, marker('danger', tipText(`krāpnieku saite${brand ? ` – tā nav ${brand} oficiālā lapa` : ''}`, r)));
+    placeMarker(item, marker('danger', tipText(brand ? t('serp.dangerBrand', { brand }) : t('serp.danger'), r)));
   } else if (res.verdict === 'suspicious') {
-    placeMarker(item, marker('warn', tipText(`aizdomīga saite${brand ? ` – nav ${brand} oficiālā adrese` : ''}`, r)));
+    placeMarker(item, marker('warn', tipText(brand ? t('serp.warnBrand', { brand }) : t('serp.warn'), r)));
   } else if (res.officialMatch && officialBadge && !item.isAd) {
-    placeMarker(item, marker('ok', `URLguard: ${brand} oficiālā lapa`));
+    placeMarker(item, marker('ok', `URLguard: ${t('serp.ok', { brand })}`));
   }
 }
 
@@ -147,7 +148,7 @@ const schedule = () => {
   clearTimeout(timer);
   timer = window.setTimeout(run, 300);
 };
-schedule();
+initLang().then(schedule);
 new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
 // SPA navigācija (DuckDuckGo, Bing)
 let lastHref = location.href;

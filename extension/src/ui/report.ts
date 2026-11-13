@@ -1,6 +1,8 @@
 import { DATA_REPO, DEFAULT_REPORT_ENDPOINT, ISSUE_FORM_URL } from '../config';
 import { cleanUrl } from '../shared';
+import { t } from '../i18n';
 
+// Šie divi teksti nonāk GitHub issue un tos nolasa robots – tie paliek latviski neatkarīgi no saskarnes valodas.
 export const KIND_PHISH = 'Krāpnieciska saite (phishing)';
 export const KIND_FP = 'Kļūdains brīdinājums (lapa ir droša)';
 
@@ -37,7 +39,7 @@ export async function submitReport(r: Report, endpoint: string): Promise<ReportR
       return { ok: false, error: String(e) };
     }
   }
-  if (!DATA_REPO || DATA_REPO.includes('OWNER')) return { ok: false, error: 'Ziņojumu repozitorijs vēl nav iestatīts.' };
+  if (!DATA_REPO || DATA_REPO.includes('OWNER')) return { ok: false, error: t('report.noRepo') };
   let host = url;
   try {
     host = new URL(url).hostname;

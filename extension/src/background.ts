@@ -1,6 +1,7 @@
 import { Engine } from './core/engine';
 import { SCHEMA_VERSION, type Bundle, type CheckResult, type Verdict } from './core/types';
 import { verifyBundle } from './core/signature';
+import { initLang, t } from './i18n';
 import { BUNDLE_URLS, DATA_REPO, PUBLIC_KEY_B64, STATS_ENDPOINT, TARGET, UPDATE_PERIOD_MIN } from './config';
 import { cleanUrl, EMPTY_STATS, getSettings, type LogEntry, type SerpItemIn, type SerpItemOut, type StatCounts } from './shared';
 
@@ -360,11 +361,22 @@ chrome.contextMenus.onClicked.addListener((info) => {
 });
 
 // ---------------------------------------------------------------- dzīves cikls
+/** Labā klikšķa izvēlne lietotāja valodā (pārveido, mainot valodu iestatījumos). */
+async function createMenus() {
+  await initLang();
+  await chrome.contextMenus.removeAll();
+  chrome.contextMenus.create({ id: 'ug-check', title: t('menu.check'), contexts: ['link'] });
+  chrome.contextMenus.create({ id: 'ug-report', title: t('menu.report'), contexts: ['link', 'page'] });
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  const oldLang = (changes.settings?.oldValue as { lang?: string } | undefined)?.lang;
+  const newLang = (changes.settings?.newValue as { lang?: string } | undefined)?.lang;
+  if (area === 'sync' && changes.settings && oldLang !== newLang) createMenus().catch(() => {});
+});
+
 chrome.runtime.onInstalled.addListener(async () => {
-  chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({ id: 'ug-check', title: 'URLguard: pārbaudīt saiti', contexts: ['link'] });
-    chrome.contextMenus.create({ id: 'ug-report', title: 'URLguard: ziņot par krāpniecisku saiti', contexts: ['link', 'page'] });
-  });
+  await createMenus();
   chrome.alarms.create('bundle-update', { periodInMinutes: UPDATE_PERIOD_MIN, delayInMinutes: 1 });
   ensureStatsAlarm();
   await getEngine();

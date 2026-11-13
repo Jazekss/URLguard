@@ -31,9 +31,10 @@ export interface Bundle {
 
 export type Verdict = 'official' | 'safe' | 'unknown' | 'suspicious' | 'danger';
 
+/** Iemesls: kods + parametri. Tekstu izvēlētajā valodā saliek saskarne (i18n: reason.<code>). */
 export interface Reason {
   code: string;
-  text: string;
+  params?: { brand?: string; domain?: string; tld?: string };
 }
 
 export interface BrandRef {

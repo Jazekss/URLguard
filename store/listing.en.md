@@ -30,6 +30,6 @@ PRIVACY FIRST
 COMMUNITY
 Seen a phishing page? Press "Report" – after review it is blocked for every URLguard user within hours. Wrong warning? Report that too.
 
-Currently focused on Latvia (banks, government portals, telecoms, delivery services) plus global brands (Google, Microsoft, Apple, Meta, PayPal). The brand list keeps growing. The interface is in Latvian; English is coming.
+Currently focused on Latvia (banks, government portals, telecoms, delivery services) plus global brands (Google, Microsoft, Apple, Meta, PayPal). The brand list keeps growing. Available in English, Latvian, Russian, Lithuanian and Estonian.
 
 URLguard is a free, volunteer-run project.

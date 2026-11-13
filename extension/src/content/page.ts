@@ -1,6 +1,7 @@
 // Katrā lapā: parāda neuzbāzīgu joslu aizdomīgām lapām un (lokāli) pārbauda pieslēgšanās formas.
 import type { CheckResult } from '../core/types';
 import { detectEngine } from './serp-scan';
+import { initLang, reasonText, t } from '../i18n';
 
 const ID_FIELD = /personas\s*kod|personal\s*code|isikukood|asmens\s*kod|smart-?id|user\s*id|lietot[aā]j|tālr|talr|phone/i;
 const AUTH_TEXT = /smart-?id|e-?paraksts|mobile-?id|internetbank|personas\s*kod/i;
@@ -28,14 +29,17 @@ function showBanner(r: CheckResult) {
     </style>
     <div class="bar" role="alert">
       <span>🛡</span>
-      <div class="msg"><b>URLguard: šī lapa var būt viltota.</b> <span class="why"></span> <span class="off"></span></div>
-      <button class="primary report">Ziņot</button>
-      <button class="close">Aizvērt</button>
+      <div class="msg"><b class="title"></b> <span class="why"></span> <span class="off"></span></div>
+      <button class="primary report"></button>
+      <button class="close"></button>
     </div>`;
-  root.querySelector('.why')!.textContent = r.reasons[0]?.text ?? '';
+  root.querySelector('.title')!.textContent = t('banner.title');
+  root.querySelector('.report')!.textContent = t('banner.report');
+  root.querySelector('.close')!.textContent = t('banner.close');
+  root.querySelector('.why')!.textContent = r.reasons[0] ? reasonText(r.reasons[0]) : '';
   if (brand) {
     const off = root.querySelector('.off')!;
-    off.append('Oficiālā adrese: ');
+    off.append(t('banner.official') + ' ');
     const a = document.createElement('a');
     a.href = brand.url;
     a.textContent = new URL(brand.url).hostname;
@@ -63,6 +67,7 @@ function collect() {
 async function main() {
   if (window.top !== window) return;
   if (detectEngine(location.hostname)) return; // meklētājus apstrādā serp.ts
+  await initLang();
   const init = (await chrome.runtime.sendMessage({ type: 'pageInit' }).catch(() => null)) as {
     enabled: boolean;
     pageChecks: boolean;

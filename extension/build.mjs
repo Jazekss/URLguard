@@ -29,7 +29,7 @@ function manifest(target) {
     manifest_version: 3,
     name: '__MSG_extName__',
     description: '__MSG_extDesc__',
-    default_locale: 'lv',
+    default_locale: 'en',
     version: VERSION,
     icons: { 16: 'icons/icon16.png', 32: 'icons/icon32.png', 48: 'icons/icon48.png', 128: 'icons/icon128.png' },
     action: { default_popup: 'popup.html', default_title: 'URLguard', default_icon: { 16: 'icons/icon16.png', 32: 'icons/icon32.png' } },
@@ -114,6 +114,16 @@ for (const target of ['chrome', 'firefox']) {
   });
 
   cpSync('static', out, { recursive: true });
+  // Pārlūka _locales (nosaukums un apraksts veikalā/izvēlnē) no tiem pašiem tulkojumu failiem
+  for (const f of readdirSync('src/i18n').filter((x) => x.endsWith('.json'))) {
+    const code = f.replace('.json', '');
+    const d = JSON.parse(readFileSync(join('src/i18n', f), 'utf8'));
+    mkdirSync(join(out, '_locales', code), { recursive: true });
+    writeFileSync(
+      join(out, '_locales', code, 'messages.json'),
+      JSON.stringify({ extName: { message: d['ext.name'] }, extDesc: { message: d['ext.desc'] } }, null, 2),
+    );
+  }
   for (const [s, buf] of Object.entries(icons)) writeFileSync(join(out, 'icons', `icon${s}.png`), buf);
   writeFileSync(join(out, 'data', 'bundle.json'), JSON.stringify(bundle));
   writeFileSync(join(out, 'manifest.json'), JSON.stringify(manifest(target), null, 2));

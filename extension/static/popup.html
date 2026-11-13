@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="lv">
+<html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -47,71 +47,73 @@
   <header>
     <img src="icons/icon48.png" alt="">
     <h1>URLguard</h1>
-    <label class="switch"><input type="checkbox" id="enabled"> Aizsardzība</label>
+    <label class="switch"><input type="checkbox" id="enabled"> <span data-i18n="popup.protection"></span></label>
   </header>
   <main>
     <section class="card consent" id="consent" hidden>
-      <b>Palīdzēsi parādīt, cik labi URLguard strādā?</b>
-      <p class="small">Reizi dienā tiktu nosūtīti <b>tikai skaitļi</b>: cik lapas bloķētas, cik brīdinājumu, cik ziņojumu.
-        <b>Bez saitēm, bez laikiem, bez identifikatoriem.</b> Var izslēgt jebkurā brīdī.
-        <a id="privacyLink" target="_blank" rel="noopener">Kas tieši tiek sūtīts?</a></p>
-      <div class="row-btns"><button class="primary" id="consentYes">Jā, palīdzēt</button><button id="consentNo">Nē, paldies</button></div>
+      <b data-i18n="consent.title"></b>
+      <p class="small"><span data-i18n="consent.text"></span>
+        <a id="privacyLink" target="_blank" rel="noopener" data-i18n="consent.what"></a></p>
+      <div class="row-btns"><button class="primary" id="consentYes" data-i18n="consent.yes"></button><button id="consentNo" data-i18n="consent.no"></button></div>
     </section>
 
     <section class="card status v-unknown" id="status">
-      <div class="head"><span class="pill" id="verdict">…</span><span class="muted small" id="statusSrc">Šī lapa</span></div>
+      <div class="head"><span class="pill" id="verdict">…</span><span class="muted small" id="statusSrc"></span></div>
       <div class="host" id="host"></div>
       <ul id="reasons"></ul>
-      <div id="officialBox" class="small" hidden>Oficiālā adrese: <a id="officialLink" target="_blank" rel="noopener"></a></div>
+      <div id="officialBox" class="small" hidden><span data-i18n="status.officialAddr"></span> <a id="officialLink" target="_blank" rel="noopener"></a></div>
     </section>
 
     <section class="stats">
-      <div class="card stat"><b id="statToday">0</b><span class="muted small">bloķēts šodien</span></div>
-      <div class="card stat"><b id="statTotal">0</b><span class="muted small">brīdinājumi kopā</span></div>
+      <div class="card stat"><b id="statToday">0</b><span class="muted small" data-i18n="stats.today"></span></div>
+      <div class="card stat"><b id="statTotal">0</b><span class="muted small" data-i18n="stats.total"></span></div>
     </section>
 
     <section class="card">
-      <h2>Ziņot</h2>
+      <h2 data-i18n="report.title"></h2>
       <form id="reportForm">
         <input type="url" id="rUrl" required placeholder="https://…" class="mono small">
-        <label class="row"><input type="radio" name="kind" value="phishing" checked> Krāpnieciska / viltota lapa</label>
-        <label class="row"><input type="radio" name="kind" value="false_positive"> Kļūdains brīdinājums – lapa ir droša</label>
-        <select id="rBrand"><option value="">Par ko izliekas? (nav obligāti)</option></select>
-        <textarea id="rNote" maxlength="500" placeholder="Piezīme, piem. “atnāca SMS par paku” (nav obligāti)"></textarea>
-        <label class="row small muted"><input type="checkbox" id="rQuery"> Iekļaut saites parametrus (?…) – var saturēt personīgus datus</label>
-        <button class="primary" type="submit" id="rSend">Nosūtīt pārbaudei</button>
+        <label class="row"><input type="radio" name="kind" value="phishing" checked> <span data-i18n="report.kindPhish"></span></label>
+        <label class="row"><input type="radio" name="kind" value="false_positive"> <span data-i18n="report.kindFp"></span></label>
+        <select id="rBrand"><option value="" data-i18n="report.brand"></option></select>
+        <textarea id="rNote" maxlength="500" data-i18n-ph="report.note"></textarea>
+        <label class="row small muted"><input type="checkbox" id="rQuery"> <span data-i18n="report.query"></span></label>
+        <button class="primary" type="submit" id="rSend" data-i18n="report.send"></button>
         <div id="rMsg" class="msg" hidden></div>
-        <div class="muted small">Saite nonāk publiskā GitHub sarakstā. Pēc pārbaudes tā tiek pievienota bāzei visiem lietotājiem.</div>
+        <div class="muted small" data-i18n="report.info"></div>
       </form>
     </section>
 
     <section class="card">
-      <h2>Pēdējie notikumi</h2>
+      <h2 data-i18n="log.title"></h2>
       <ul class="log" id="log"></ul>
-      <div class="muted small" id="logEmpty">Vēl nekas nav bloķēts. 👍</div>
+      <div class="muted small" id="logEmpty" data-i18n="log.empty"></div>
     </section>
 
     <section class="card">
       <details>
-        <summary>Iestatījumi</summary>
+        <summary data-i18n="settings.title"></summary>
         <div class="settings">
-          <label>Krāpnieku saites meklētājā
+          <label><span data-i18n="settings.lang"></span>
+            <select id="lang"><option value="auto" data-i18n="settings.langAuto"></option></select>
+          </label>
+          <label><span data-i18n="settings.serpMode"></span>
             <select id="serpMode">
-              <option value="mark">Atzīmēt ar sarkanu</option>
-              <option value="hide">Paslēpt</option>
+              <option value="mark" data-i18n="settings.serpMark"></option>
+              <option value="hide" data-i18n="settings.serpHide"></option>
             </select>
           </label>
-          <label class="row"><input type="checkbox" id="serpOfficialBadge"> Rādīt ✓ pie oficiālajām lapām</label>
-          <label class="row"><input type="checkbox" id="pageChecks"> Pārbaudīt pieslēgšanās formas lapās (lokāli)</label>
-          <label class="row"><input type="checkbox" id="shareStats"> Anonīma statistika (tikai skaitļi, reizi dienā)</label>
-          <label class="small">Ziņojumu serviss (nav obligāti)
+          <label class="row"><input type="checkbox" id="serpOfficialBadge"> <span data-i18n="settings.officialBadge"></span></label>
+          <label class="row"><input type="checkbox" id="pageChecks"> <span data-i18n="settings.pageChecks"></span></label>
+          <label class="row"><input type="checkbox" id="shareStats"> <span data-i18n="settings.stats"></span></label>
+          <label class="small"><span data-i18n="settings.endpoint"></span>
             <input type="text" id="reportEndpoint" placeholder="https://…workers.dev/report">
           </label>
           <div class="footer small">
             <span class="muted" id="dataInfo"></span>
-            <button type="button" id="updateNow">Atjaunināt bāzi</button>
+            <button type="button" id="updateNow" data-i18n="settings.update"></button>
           </div>
-          <button type="button" id="grant" hidden>Atļaut piekļuvi visām lapām</button>
+          <button type="button" id="grant" hidden data-i18n="settings.grant"></button>
         </div>
       </details>
     </section>

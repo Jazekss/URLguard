@@ -1,4 +1,5 @@
 import type { CheckResult } from '../core/types';
+import { applyDom, initLang, rich, reasonText, t } from '../i18n';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -28,9 +29,12 @@ function renderUrl(r: CheckResult) {
 }
 
 async function main() {
+  await initLang();
+  applyDom();
+  document.title = t('warn.pageTitle');
   const r = await load();
   if (!r) {
-    $('url').textContent = 'Nav informācijas par saiti.';
+    $('url').textContent = t('warn.noInfo');
     return;
   }
   document.title = `URLguard – ${r.host}`;
@@ -38,12 +42,12 @@ async function main() {
   const ul = $('reasons');
   for (const reason of r.reasons) {
     const li = document.createElement('li');
-    li.textContent = reason.text;
+    li.textContent = reasonText(reason);
     ul.append(li);
   }
   if (r.brand) {
     $('official').hidden = false;
-    $('brand').textContent = r.brand.name;
+    $('didYouMean').replaceChildren(...rich(t('warn.didYouMean', { brand: r.brand.name })));
     const a = $<HTMLAnchorElement>('officialLink');
     a.href = r.brand.url;
     a.textContent = r.brand.url;
@@ -56,7 +60,7 @@ async function main() {
     else location.replace('about:blank');
   };
   $('proceed').onclick = async () => {
-    if (!confirm(`Vai tiešām atvērt ${r.host}?\n\nNekad neievadiet šajā lapā paroles, Smart-ID vai kartes datus.`)) return;
+    if (!confirm(t('warn.confirm', { host: r.host }))) return;
     await chrome.runtime.sendMessage({ type: 'bypass', url: r.url });
     location.replace(r.url);
   };

@@ -336,28 +336,10 @@ export class Engine {
   }
 
   private reason(code: string, o: { brand?: Brand; domain?: string; tld?: string }): Reason {
-    const b = o.brand?.name ?? '';
-    const d = o.domain ?? '';
-    const texts: Record<string, string> = {
-      blocklist: 'Adrese ir zināmo krāpniecisko vietņu sarakstā.',
-      'official-embedded': `Adresē iestrādāts ${b} oficiālais domēns, bet lapa patiesībā atrodas citur (${d}).`,
-      'fake-domain-prefix': `Adrese sākas kā ${b} lapa, bet īstais domēns ir ${d}.`,
-      homoglyph: `Adresē izmantoti līdzīga izskata simboli, lai atdarinātu ${b}.`,
-      'brand-other-tld': `${b} nosaukums ar citu domēna galotni (.${o.tld}) – tā nav oficiālā adrese.`,
-      typosquat: `Adrese ir ļoti līdzīga ${b}, bet atšķiras par dažiem burtiem.`,
-      'brand-in-domain': `Adresē ir ${b} nosaukums, bet tas nav ${b} oficiālais domēns.`,
-      'brand-in-subdomain': `${b} nosaukums ir tikai apakšdomēnā – īstais domēns ir ${d}.`,
-      'ad-impersonation': `Reklāma izliekas par ${b}, bet ved uz ${d}.`,
-      'mixed-script': 'Adresē sajaukti dažādu alfabētu burti (piem., kirilica ar latīņu).',
-      'suspicious-tld': `Domēna galotne .${o.tld} bieži tiek izmantota krāpniecībā.`,
-      'phishing-words': 'Adresē ir pikšķerēšanai raksturīgi vārdi (login, verify, atmaksa u.c.).',
-      'free-hosting': 'Lapa izvietota bezmaksas hostingā, ko bieži izmanto krāpnieki.',
-      'country-hint': 'Adresē pievienots "lv"/"gov" u.tml., lai izskatītos oficiālāk.',
-      punycode: 'Adresē ir nelatīņu (punycode) simboli.',
-      'search-mismatch': `Jūs meklējāt ${b}, bet šī saite neved uz ${b} oficiālo lapu.`,
-      'login-on-lookalike': 'Lapa prasa pieslēgšanās datus (parole / Smart-ID / personas kods).',
-      'brand-login-unofficial': `Lapa izskatās pēc ${b} pieslēgšanās, bet atrodas adresē ${d}.`,
-    };
-    return { code, text: texts[code] ?? code };
+    const params: Reason['params'] = {};
+    if (o.brand) params.brand = o.brand.name;
+    if (o.domain) params.domain = o.domain;
+    if (o.tld) params.tld = o.tld;
+    return { code, params };
   }
 }

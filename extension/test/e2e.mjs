@@ -112,13 +112,15 @@ try {
     await page.goto(`${BASE}/popup.html`, { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(() => {});
     await page.waitForSelector('#consent:not([hidden])', { timeout: 4000 }).catch(() => {});
     ok('statistikas jautājums parādās', await page.$eval('#consent', (e) => !e.hidden).catch(() => false));
+    // Testi pārbauda latviskus tekstus – valoda lv neatkarīgi no pārlūka valodas
+    await page.evaluate(() => chrome.storage.sync.set({ settings: { lang: 'lv' } }));
     await page.click('#consentYes');
     await sleep(300);
     const s = await page.evaluate(() => chrome.storage.sync.get('settings'));
     if (FF) {
       // Firefox parāda savu datu vākšanas apstiprinājuma logu – headless to nevar apstiprināt; iestatām tieši
       console.log('– Firefox: piekrišanu apstiprina pārlūka logs (pārbaudīt ar roku); testā iestata tieši');
-      await page.evaluate(() => chrome.storage.sync.set({ settings: { shareStats: true } }));
+      await page.evaluate(() => chrome.storage.sync.set({ settings: { shareStats: true, lang: 'lv' } }));
     } else ok('piekrišana saglabāta', s.settings?.shareStats === true);
     await page.close();
   }
@@ -221,6 +223,25 @@ try {
     ok('jautājums vairs neparādās', await page.$eval('#consent', (e) => e.hidden));
     const brands = await page.$$eval('#rBrand option', (o) => o.length);
     ok('ziņošanas formā zīmolu saraksts', brands > 40);
+
+    // Valodas maiņa: krievu un angļu, tad atpakaļ latviešu
+    const u = `${BASE}/popup.html?u=${encodeURIComponent('https://swedbank.top/ib')}`;
+    for (const [code, expectVerdict, expectReason] of [
+      ['ru', 'Опасный сайт', 'окончанием домена'],
+      ['en', 'Dangerous site', 'different ending'],
+      ['lv', 'Bīstama lapa', 'galotni'],
+    ]) {
+      await page.evaluate((c) => chrome.storage.sync.get('settings').then((s) => chrome.storage.sync.set({ settings: { ...s.settings, lang: c } })), code);
+      await page.goto(u, { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(() => {});
+      await page.waitForFunction(() => document.getElementById('verdict')?.textContent !== '…', { timeout: 5000 }).catch(() => {});
+      const [verdict, reason, lang, title] = await page.evaluate(() => [
+        document.getElementById('verdict').textContent,
+        document.querySelector('#reasons li')?.textContent ?? '',
+        document.documentElement.lang,
+        document.querySelector('[data-i18n="settings.title"]').textContent,
+      ]);
+      ok(`valoda ${code}: popup tulkots`, verdict === expectVerdict && reason.includes(expectReason) && lang === code, `${verdict} | ${title} | ${reason.slice(0, 50)}`);
+    }
     await page.screenshot({ path: resolve('test/popup.png'), fullPage: true });
     // Bāzes atjaunināšana no releja (paraksta pārbaude paplašinājumā)
     const before = await page.evaluate(() => chrome.runtime.sendMessage({ type: 'getStatus' }).then((s) => s.data.generated));

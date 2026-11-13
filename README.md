@@ -55,6 +55,17 @@ Statistiku sūta tikai tad, ja lietotājs piekrīt. Reizi dienā tiek nosūtīti
 
 `scripts/wrangler.mjs` glabā Cloudflare pieslēgšanās datus mapē `F:\Projects\_deps\wrangler\config`.
 
+## Valodas
+
+Saskarne ir pieejama latviešu, angļu, krievu, lietuviešu un igauņu valodā. Pēc noklusējuma tiek izmantota pārlūka valoda, un to var mainīt iestatījumos.
+
+- **Tulkojumi:** `extension/src/i18n/<valoda>.json`. No šiem failiem tiek ģenerēti arī pārlūka `_locales` (nosaukums un apraksts).
+- **Jauna valoda:** nokopē `en.json`, iztulko vērtības un pievieno valodu sarakstam `LANGS` failā `src/i18n/index.ts`.
+- **Pārbaude:** `test/i18n.test.ts` pārbauda, vai visās valodās ir visas atslēgas, vai sakrīt `{parametri}` un vai apraksts nav garāks par 132 simboliem.
+- **Iemesli:** dzinējs atgriež iemesla kodu un parametrus, un tekstu saliek saskarne (`reason.<kods>`).
+
+Lietuviešu un igauņu tulkojumiem vēl vajag dzimtās valodas runātāja pārbaudi. Labojumus var iesniegt ar pull request.
+
 ## Veikali
 
 Iesniegšanas kontrolsaraksts, teksti un attēli: [store/](store/README.md). Izlaidums: `git tag v1.0.0 && git push origin v1.0.0`. Tas izveido GitHub Release ar ZIP failiem.

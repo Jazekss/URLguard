@@ -11,6 +11,8 @@ export interface Settings {
   reportEndpoint: string;
   /** Anonīmā statistika: null = vēl nav jautāts, true/false = lietotāja izvēle. */
   shareStats: boolean | null;
+  /** Saskarnes valoda: 'auto' = pārlūka valoda. */
+  lang: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -20,6 +22,7 @@ export const DEFAULT_SETTINGS: Settings = {
   pageChecks: true,
   reportEndpoint: '',
   shareStats: null,
+  lang: 'auto',
 };
 
 export async function getSettings(): Promise<Settings> {
@@ -85,11 +88,3 @@ export function cleanUrl(raw: string, keepQuery = false): string {
     return raw;
   }
 }
-
-export const VERDICT_LABEL: Record<Verdict, string> = {
-  official: 'Oficiālā lapa',
-  safe: 'Droša lapa',
-  unknown: 'Nav zināmu draudu',
-  suspicious: 'Aizdomīga lapa',
-  danger: 'Bīstama lapa',
-};

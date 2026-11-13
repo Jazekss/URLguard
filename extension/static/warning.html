@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="lv">
+<html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>URLguard – bīstama lapa</title>
+  <title>URLguard</title>
   <link rel="stylesheet" href="ui.css">
   <style>
     body { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--danger-bg); }
@@ -27,31 +27,31 @@
     <div class="head">
       <div class="icon" aria-hidden="true">!</div>
       <div>
-        <h1 id="title">Uzmanību! Iespējama krāpnieku lapa</h1>
-        <div class="muted">URLguard apturēja šīs lapas atvēršanu.</div>
+        <h1 id="title" data-i18n="warn.title"></h1>
+        <div class="muted" data-i18n="warn.stopped"></div>
       </div>
     </div>
 
     <div class="card">
-      <div class="muted small">Jūs mēģinājāt atvērt:</div>
+      <div class="muted small" data-i18n="warn.tried"></div>
       <p class="url mono" id="url"></p>
       <ul id="reasons"></ul>
     </div>
 
     <div class="card official" id="official" hidden>
-      Jūs, iespējams, meklējāt <b id="brand"></b>. Oficiālā adrese:
+      <span id="didYouMean"></span>
       <a id="officialLink" class="mono"></a>
     </div>
 
     <div class="actions">
-      <button class="primary" id="goOfficial" hidden>Doties uz oficiālo lapu</button>
-      <button id="back">← Atpakaļ (droši)</button>
+      <button class="primary" id="goOfficial" hidden data-i18n="warn.goOfficial"></button>
+      <button id="back" data-i18n="warn.back"></button>
       <span class="spacer"></span>
     </div>
 
     <footer class="small">
-      <button class="link" id="falsePositive">Šī ir droša lapa – ziņot par kļūdu</button>
-      <button class="link" id="proceed">Tomēr atvērt (nav ieteicams)</button>
+      <button class="link" id="falsePositive" data-i18n="warn.fp"></button>
+      <button class="link" id="proceed" data-i18n="warn.proceed"></button>
     </footer>
   </main>
   <script src="warning.js"></script>
