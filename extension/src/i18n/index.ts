@@ -61,6 +61,9 @@ export function t(key: string, params: Record<string, string | number | undefine
 }
 
 export function reasonText(r: Reason): string {
+  // Vecāka dzinēja rezultāts (pirms 1.1.0) – gatavs teksts bez parametriem
+  const legacy = (r as Reason & { text?: string }).text;
+  if (!r.params && legacy) return legacy;
   return t(`reason.${r.code}`, r.params ?? {});
 }
 

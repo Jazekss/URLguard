@@ -71,6 +71,19 @@ describe('krāpnieku paraugi', () => {
   });
 });
 
+describe('saderība ar vecākām versijām', () => {
+  it('google.lv ir oficiāls arī dzinējam, kas nepazīst anyTld', () => {
+    const old = structuredClone(bundle);
+    for (const b of old.brands) delete (b as { anyTld?: string[] }).anyTld;
+    const e = new Engine(old);
+    for (const u of ['https://accounts.google.lv/accounts/SetSID', 'https://www.google.de/', 'https://www.dpd.de/', 'https://tele2.se/'])
+      expect(e.check(u).verdict, u).toBe('official');
+  });
+  it('accounts.google.lv – oficiāls (lietotāja ziņojums)', () => {
+    expect(v('https://accounts.google.lv/accounts/SetSID?ssdc=1&continue=https://myaccount.google.com/')).toBe('official');
+  });
+});
+
 describe('meklēšanas konteksts', () => {
   it('līdzīgs parasts vārds nav "krāpnieku" pat meklējot zīmolu', () => {
     const e2 = new Engine({ ...bundle, allowlist: [] });

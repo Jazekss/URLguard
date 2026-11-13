@@ -48,6 +48,20 @@ async function fetchFeeds({ protectedSet, shared }) {
   return { domains, urls };
 }
 
+// Saderība ar vecākām paplašinājuma versijām: tās nepazīst "anyTld", tāpēc tiem pašiem zīmoliem
+// pievienojam arī izplatītākās valstu galotnes kā parastus oficiālos domēnus (google.lv, dpd.de …).
+// Likums: bāzei VIENMĒR jāstrādā arī ar vecākiem dzinējiem – jaunu mehānismu dēļ neizņemam vecos ierakstus.
+const COMPAT_SUFFIXES = [
+  'com', 'net', 'org', 'eu', 'lv', 'lt', 'ee', 'fi', 'se', 'no', 'dk', 'de', 'at', 'ch', 'nl', 'be', 'fr', 'es', 'pt', 'it',
+  'ie', 'pl', 'cz', 'sk', 'hu', 'ro', 'bg', 'gr', 'hr', 'si', 'ru', 'by', 'ua', 'us', 'ca', 'co.uk', 'com.au', 'co.in',
+  'com.tr', 'com.br', 'com.mx', 'com.ua', 'com.hk', 'com.sg', 'co.jp', 'co.kr', 'co.il', 'co.za', 'cn', 'is', 'lu',
+];
+function withCompat(b) {
+  if (!b.anyTld?.length) return b.official;
+  const extra = b.anyTld.flatMap((label) => COMPAT_SUFFIXES.map((s) => `${label}.${s}`));
+  return [...new Set([...b.official, ...extra])];
+}
+
 export async function buildBundle({ feeds = false } = {}) {
   const brands = readBrands();
   const allowlist = uniq(readList('allowlist/domains.txt'));
@@ -69,7 +83,7 @@ export async function buildBundle({ feeds = false } = {}) {
     version: SCHEMA_VERSION,
     generated: new Date().toISOString(),
     brands: brands.map(({ id, name, category, url, official, keywords, strictKeywords, anyTld, weak, region }) => ({
-      id, name, category, url, official, keywords,
+      id, name, category, url, official: withCompat({ official, anyTld }), keywords,
       ...(strictKeywords ? { strictKeywords } : {}), ...(anyTld ? { anyTld } : {}), ...(weak ? { weak } : {}), region,
     })),
     blocklist: { domains, urls },
