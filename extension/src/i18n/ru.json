@@ -1,29 +1,24 @@
 {
   "ext.name": "URLguard – защита от фишинга",
   "ext.desc": "Предупреждает, если ссылка выдаёт себя за банк или госпортал. Отмечает мошенническую рекламу в поиске. Бесплатно.",
-
   "popup.protection": "Защита",
   "consent.title": "Поможете показать, насколько хорошо работает URLguard?",
   "consent.text": "Раз в день будут отправляться **только числа**: сколько страниц заблокировано, сколько предупреждений, сколько сообщений. **Без ссылок, без времени, без идентификаторов.** Можно отключить в любой момент.",
   "consent.what": "Что именно отправляется?",
   "consent.yes": "Да, помочь",
   "consent.no": "Нет, спасибо",
-
   "status.thisPage": "Эта страница",
   "status.checkedLink": "Проверенная ссылка",
   "status.notChecked": "Не проверяется",
   "status.officialOf": "Это официальный сайт {brand}.",
   "status.officialAddr": "Официальный адрес:",
-
   "verdict.official": "Официальный сайт",
   "verdict.safe": "Безопасный сайт",
   "verdict.unknown": "Известных угроз нет",
   "verdict.suspicious": "Подозрительный сайт",
   "verdict.danger": "Опасный сайт",
-
   "stats.today": "заблокировано сегодня",
   "stats.total": "предупреждений всего",
-
   "report.title": "Сообщить",
   "report.kindPhish": "Мошенническая / поддельная страница",
   "report.kindFp": "Ошибочное предупреждение – страница безопасна",
@@ -36,7 +31,6 @@
   "report.okGithub": "Открыта форма GitHub – проверьте её и нажмите «Submit new issue».",
   "report.fail": "Не удалось: {error}",
   "report.noRepo": "Репозиторий для сообщений ещё не настроен.",
-
   "log.title": "Последние события",
   "log.empty": "Пока ничего не заблокировано. 👍",
   "log.blocked": "заблокирована",
@@ -45,7 +39,6 @@
   "log.marked": "отмечена",
   "log.bypassed": "открыта всё равно",
   "log.pretends": "Выдаёт себя за: {brand}",
-
   "settings.title": "Настройки",
   "settings.lang": "Язык",
   "settings.langAuto": "Автоматически (язык браузера)",
@@ -64,7 +57,6 @@
   "update.failed": "Не удалось",
   "update.notConfigured": "Репозиторий не настроен",
   "data.info": "База: {date} · брендов: {brands} · заблокировано: {domains}",
-
   "warn.pageTitle": "URLguard – опасная страница",
   "warn.title": "Внимание! Возможно, мошеннический сайт",
   "warn.stopped": "URLguard остановил открытие этой страницы.",
@@ -76,12 +68,10 @@
   "warn.proceed": "Всё равно открыть (не рекомендуется)",
   "warn.confirm": "Вы действительно хотите открыть {host}?\n\nНикогда не вводите на этой странице пароли, Smart-ID или данные карты.",
   "warn.noInfo": "Нет информации о ссылке.",
-
   "banner.title": "URLguard: эта страница может быть поддельной.",
   "banner.official": "Официальный адрес:",
   "banner.report": "Сообщить",
   "banner.close": "Закрыть",
-
   "serp.hidden": "🛡 URLguard скрыл мошеннические ссылки: {n}.",
   "serp.show": "Показать",
   "serp.danger": "мошенническая ссылка",
@@ -89,10 +79,8 @@
   "serp.warn": "подозрительная ссылка",
   "serp.warnBrand": "подозрительная ссылка – не официальный адрес {brand}",
   "serp.ok": "официальный сайт {brand}",
-
   "menu.check": "URLguard: проверить ссылку",
   "menu.report": "URLguard: сообщить о мошеннической ссылке",
-
   "reason.feed-listed": "Адрес находится в публичном списке мошеннических сайтов (ещё не подтверждено).",
   "reason.blocklist": "Адрес находится в списке известных мошеннических сайтов.",
   "reason.official-embedded": "В адрес встроен официальный домен {brand}, но на самом деле страница находится в другом месте ({domain}).",
@@ -111,5 +99,15 @@
   "reason.punycode": "В адресе есть нелатинские (punycode) символы.",
   "reason.search-mismatch": "Вы искали {brand}, но эта ссылка не ведёт на официальный сайт {brand}.",
   "reason.login-on-lookalike": "Страница запрашивает данные для входа (пароль / Smart-ID / персональный код).",
-  "reason.brand-login-unofficial": "Страница похожа на вход в {brand}, но находится по адресу {domain}."
+  "reason.brand-login-unofficial": "Страница похожа на вход в {brand}, но находится по адресу {domain}.",
+  "reason.context-mismatch": "Ссылка открыта из записи о {brand}, но ведёт на {domain} – это не официальный сайт {brand}.",
+  "reason.giveaway": "В записи обещают розыгрыш, приз или подарок – типичный приём мошенников.",
+  "popup.disableSite": "Отключить для этого сайта",
+  "popup.enableSite": "Включить для этого сайта",
+  "status.disabledHere": "URLguard отключён для этого сайта",
+  "settings.disabledSites": "Сайты, где проверка отключена",
+  "settings.noDisabled": "Нет",
+  "settings.remove": "Включить снова",
+  "social.shortener": "Сокращённая ссылка – URLguard проверит адрес назначения при открытии.",
+  "social.mismatch": "ссылка не ведёт на официальный сайт {brand}"
 }

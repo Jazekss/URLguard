@@ -72,6 +72,45 @@ describe('krāpnieku paraugi', () => {
   });
 });
 
+describe('saites konteksts (soc. tīkli, e-pasts)', () => {
+  it('Lidl izloze -> svešs domēns = bīstams', () => {
+    const r = engine.check('https://lucky-shoppers-club.com/claim', {
+      context: 'Lidl izloze! Laimē 500 € dāvanu karti – atbildi uz 3 jautājumiem', anchor: 'Piedalīties',
+    });
+    expect(r.verdict).toBe('danger');
+    expect(r.brand?.id).toBe('lidl');
+    expect(r.reasons.map((x) => x.code)).toEqual(expect.arrayContaining(['context-mismatch', 'giveaway']));
+  });
+  it('zīmols domēnā + izloze ierakstā -> bīstams', () => {
+    expect(engine.check('https://lidl-davanas.top/claim', { context: 'Lidl izloze! Laimē dāvanu karti' }).verdict).toBe('danger');
+  });
+  it('saites teksts ar zīmolu -> aizdomīgs', () => {
+    expect(engine.check('https://random-portal.net/', { anchor: 'Swedbank internetbanka' }).verdict).toBe('suspicious');
+  });
+  it('ziņa par zīmolu bez darbības vārdiem -> nebrīdina', () => {
+    expect(engine.check('https://news-site-example.com/a', { context: 'Swedbank paaugstina procentu likmes', anchor: 'Lasīt vairāk' }).verdict).toBe('unknown');
+  });
+  it('oficiālā lapa no ieraksta par to pašu zīmolu -> oficiāla', () => {
+    expect(engine.check('https://www.lidl.lv/akcijas', { context: 'Lidl izloze', anchor: 'lidl.lv' }).verdict).toBe('official');
+  });
+  it('saīsinātājs pats par sevi neitrāls', () => {
+    const r = engine.check('https://bit.ly/3abcdEF', { context: 'Lidl izloze' });
+    expect(r.verdict).toBe('unknown');
+    expect(r.shortener).toBe(true);
+  });
+});
+
+describe('jaunie zīmoli bez kļūdainiem brīdinājumiem', () => {
+  it.each(['https://www.westernunion.com/', 'https://finance.yahoo.com/', 'https://www.shop-apotheke.com/', 'https://trezor.gov.rs/', 'https://www.portland.gov/', 'https://images-amazon.com/x', 'https://www.okx.cab/', 'https://www.lidlplus.com/'])('%s', (u) => {
+    expect(['unknown', 'official', 'safe']).toContain(v(u));
+  });
+  it.each([['https://binance-verify-account.com/', 'binance'], ['https://lidl-davanas.top/', 'lidl'], ['https://metamask-wallet-restore.app/', 'metamask']])('%s -> %s', (u, b) => {
+    const r = engine.check(u);
+    expect(r.verdict).not.toBe('unknown');
+    expect(r.brand?.id).toBe(b);
+  });
+});
+
 describe('publiskie krāpnieku saraksti', () => {
   const e = new Engine({
     ...bundle,

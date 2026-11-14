@@ -1,5 +1,5 @@
 export type BrandCategory =
-  | 'bank' | 'gov' | 'telco' | 'utility' | 'post' | 'shop' | 'transport' | 'tech' | 'social' | 'auth' | 'other';
+  | 'bank' | 'gov' | 'telco' | 'utility' | 'post' | 'shop' | 'transport' | 'tech' | 'social' | 'auth' | 'health' | 'crypto' | 'other';
 
 export interface Brand {
   id: string;
@@ -17,6 +17,8 @@ export interface Brand {
   anyTld?: string[];
   /** Zīmols pats lieto daudzus domēnus ar savu nosaukumu (googlesource.com) – nosaukums domēnā vien nav pietiekams signāls. */
   weak?: boolean;
+  /** Bez drukas kļūdu pārbaudes (vārds ir līdzīgs parastam vārdam: binance~finance). */
+  noTypo?: boolean;
   region?: string;
 }
 
@@ -28,6 +30,8 @@ export interface Bundle {
   blocklist: { domains: string[]; urls: string[]; suspect?: string[] };
   allowlist: string[];
   sharedHosting: string[];
+  /** Saišu saīsinātāji (1.3.0+). */
+  shorteners?: string[];
 }
 
 export type Verdict = 'official' | 'safe' | 'unknown' | 'suspicious' | 'danger';
@@ -54,6 +58,8 @@ export interface CheckResult {
   brand?: BrandRef;
   /** 'domain' = bloķēts ar DNR noteikumu jau pirms ielādes. */
   listed?: 'domain' | 'url';
+  /** Saīsināta saite (bit.ly u.c.) – galamērķis zināms tikai pēc atvēršanas. */
+  shortener?: boolean;
 }
 
 export interface CheckContext {
@@ -62,6 +68,10 @@ export interface CheckContext {
   /** Saites/reklāmas virsraksts meklētājā. */
   title?: string;
   isAd?: boolean;
+  /** Teksts, no kura saite tika atvērta (ieraksts soc. tīklā, e-pasts, lapa). */
+  context?: string;
+  /** Pašas saites teksts (enkurs). */
+  anchor?: string;
 }
 
 export interface PageSignals {

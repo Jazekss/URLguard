@@ -12,6 +12,8 @@ Visas pārbaudes notiek **lokāli**. Saites netiek sūtītas uz serveri, izņemo
 | Heuristika (`extension/src/core/engine.ts`) | Pārbauda šādas pazīmes: zīmols apakšdomēnā (`eveseliba.lv.xyz.com`), iestrādāts oficiālais domēns (`swedbank.lv-login.com`), drukas kļūdas (`swedbamk.lv`), homoglifi un punycode (`аррӏе.com`), cita galotne (`swedbank.top`), aizdomīgas galotnes, bezmaksas hostingi, vārdi `login`/`verify`/`atmaksa` |
 | Meklētājs | Lietotājs meklēja "eveselība", bet saite ved uz citu domēnu. Reklāmas virsrakstā ir zīmola nosaukums, bet domēns nav oficiālais |
 | Lapas saturs | Pieslēgšanās forma, Smart-ID vai personas koda lauks uz līdzīga domēna. Šādu lapu uzskata par bīstamu |
+| Soc. tīkli un saīsinātās saites | Kad uzklikšķina uz saites, URLguard atceras, no kāda ieraksta tā atvērta ("Lidl izloze…"), un salīdzina to ar galamērķi. Tas strādā arī pēc bit.ly, t.co u.c. pāradresācijām. Facebook, Instagram, X, TikTok, LinkedIn, Reddit un YouTube ierakstos aizdomīgām saitēm pievieno ikonu |
+| Izslēgšana | Pārbaudi var izslēgt visur ("Aizsardzība") vai atsevišķai vietnei (popup logā "Izslēgt šai vietnei"). Izslēgto vietņu saraksts ir iestatījumos |
 
 Vērtējums: **bīstams** (≥70) nozīmē pilnekrāna brīdinājumu ar pogu "Doties uz oficiālo lapu". **Aizdomīgs** (≥40) nozīmē neuzbāzīgu joslu lapas augšā. Pārējos gadījumos nekas netiek rādīts.
 

@@ -1,5 +1,5 @@
 import type { CheckResult } from '../core/types';
-import { getSettings, saveSettings, type LogEntry, type Settings } from '../shared';
+import { getSettings, isSiteDisabled, saveSettings, siteKey, type LogEntry, type Settings } from '../shared';
 import { applyDom, lang, LANGS, locale, reasonText, setLang, t } from '../i18n';
 import { submitReport } from './report';
 import { PRIVACY_URL, TARGET } from '../config';
@@ -89,6 +89,56 @@ function renderData(d: Status['data']) {
   const date = new Date(d.generated).toLocaleDateString(locale());
   $('dataInfo').textContent =
     t('data.info', { date, brands: d.brands, domains: d.domains }) + (d.repoConfigured ? '' : ` · ${t('update.notConfigured')}`);
+}
+
+/** Vietnes izslēgšana: poga statusā + saraksts iestatījumos. */
+function initSites(s: Settings, url: string | undefined) {
+  const list = $('disabledList');
+  const render = (sites: string[]) => {
+    list.replaceChildren();
+    if (!sites.length) {
+      const li = document.createElement('li');
+      li.className = 'muted';
+      li.textContent = t('settings.noDisabled');
+      list.append(li);
+    }
+    for (const d of sites) {
+      const li = document.createElement('li');
+      const name = document.createElement('span');
+      name.className = 'mono';
+      name.textContent = d;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'link small';
+      b.textContent = t('settings.remove');
+      b.onclick = async () => {
+        await saveSettings({ disabledSites: sites.filter((x) => x !== d) });
+        location.reload();
+      };
+      li.append(name, b);
+      list.append(li);
+    }
+  };
+  render(s.disabledSites ?? []);
+
+  if (!url || paramUrl || !/^https?:/.test(url)) return;
+  const host = new URL(url).hostname;
+  const off = isSiteDisabled(s, host);
+  const btn = $<HTMLButtonElement>('siteToggle');
+  btn.hidden = false;
+  btn.textContent = t(off ? 'popup.enableSite' : 'popup.disableSite');
+  if (off) {
+    $('verdict').textContent = t('status.disabledHere');
+    $('status').className = 'card status v-unknown';
+    $('reasons').replaceChildren();
+    $('officialBox').hidden = true;
+  }
+  btn.onclick = async () => {
+    const sites = s.disabledSites ?? [];
+    const next = off ? sites.filter((d) => !(host === d || host.endsWith('.' + d))) : [...new Set([...sites, siteKey(host)])];
+    await saveSettings({ disabledSites: next });
+    location.reload();
+  };
 }
 
 async function initSettings(s: Settings) {
@@ -211,6 +261,7 @@ async function main() {
   renderStatus(st.result, url);
   renderLog(st.log);
   renderData(st.data);
+  initSites(settings, url);
   await initSettings(settings);
   await initReport(url, settings);
 }

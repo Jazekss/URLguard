@@ -3,7 +3,7 @@ import { SCHEMA_VERSION, type Bundle, type CheckResult, type Verdict } from './c
 import { verifyBundle } from './core/signature';
 import { initLang, t } from './i18n';
 import { BUNDLE_URLS, DATA_REPO, PUBLIC_KEY_B64, STATS_ENDPOINT, TARGET, UPDATE_PERIOD_MIN } from './config';
-import { cleanUrl, EMPTY_STATS, getSettings, type LogEntry, type SerpItemIn, type SerpItemOut, type StatCounts } from './shared';
+import { cleanUrl, EMPTY_STATS, getSettings, isSiteDisabled, type LogEntry, type SerpItemIn, type SerpItemOut, type StatCounts } from './shared';
 
 const RANK: Record<Verdict, number> = { official: 0, safe: 1, unknown: 2, suspicious: 3, danger: 4 };
 const DNR_BASE_ID = 1000;
@@ -201,11 +201,43 @@ function openWindow(path: string) {
 }
 
 // ---------------------------------------------------------------- navigācija
-async function onMainFrame(tabId: number, url: string) {
+// ---------------------------------------------------------------- saites konteksts (no kā saite atvērta)
+interface LinkCtx { context: string; anchor: string; from: string; t: number }
+const CTX_TTL = 20_000;
+const pendingByUrl = new Map<string, LinkCtx>(); // uzklikšķinātā saite -> konteksts
+const ctxByRequest = new Map<string, LinkCtx>(); // navigācija (arī pēc pāradresācijām) -> konteksts
+
+function rememberClick(urls: string[], c: LinkCtx) {
+  const now = Date.now();
+  for (const [k, v] of pendingByUrl) if (now - v.t > CTX_TTL) pendingByUrl.delete(k);
+  for (const u of urls) if (u) pendingByUrl.set(u, c);
+}
+
+function contextFor(requestId: string | undefined, url: string): LinkCtx | undefined {
+  if (requestId && ctxByRequest.has(requestId)) return ctxByRequest.get(requestId);
+  const c = pendingByUrl.get(url);
+  if (c && Date.now() - c.t < CTX_TTL) {
+    pendingByUrl.delete(url);
+    if (requestId) {
+      ctxByRequest.set(requestId, c);
+      if (ctxByRequest.size > 200) ctxByRequest.delete(ctxByRequest.keys().next().value!);
+    }
+    return c;
+  }
+  return undefined;
+}
+
+async function onMainFrame(tabId: number, url: string, requestId?: string) {
   const settings = await getSettings();
   if (!settings.enabled) return;
+  const lc = contextFor(requestId, url);
+  if (isSiteDisabled(settings, new URL(url).hostname)) {
+    chrome.action.setBadgeText({ tabId, text: '' }).catch(() => {});
+    return;
+  }
   const engine = await getEngine();
-  const r = engine.check(url, { query: await getTabQuery(tabId) });
+  // Konteksts no soc. tīkla ieraksta / e-pasta, ja saite atvērta no tāda (arī pēc bit.ly pāradresācijas)
+  const r = engine.check(url, { query: await getTabQuery(tabId), context: lc?.context, anchor: lc?.anchor });
   await setTabState(tabId, r);
   setBadge(tabId, r);
   if (await isBypassed(r.host)) return;
@@ -219,7 +251,7 @@ async function onMainFrame(tabId: number, url: string) {
 
 chrome.webRequest.onBeforeRequest.addListener(
   (d) => {
-    if (d.tabId >= 0 && d.type === 'main_frame') onMainFrame(d.tabId, d.url).catch(console.error);
+    if (d.tabId >= 0 && d.type === 'main_frame') onMainFrame(d.tabId, d.url, d.requestId).catch(console.error);
     return undefined;
   },
   { urls: ['http://*/*', 'https://*/*'], types: ['main_frame'] },
@@ -241,7 +273,9 @@ type Msg =
   | { type: 'updateNow' }
   | { type: 'getBrands' }
   | { type: 'openReport'; url: string; kind?: 'phishing' | 'false_positive' }
-  | { type: 'reportSent' };
+  | { type: 'reportSent' }
+  | { type: 'linkContext'; url: string; raw: string; context: string; anchor: string; from: string }
+  | { type: 'contextCheck'; items: { key: string; url: string; context: string; anchor: string }[] };
 
 /** Popup: ja cilnei jau ir rezultāts (piem. no lapas satura pārbaudes) – rādām to. */
 async function statusFor(engine: Engine, url: string, tabId?: number): Promise<CheckResult> {
@@ -252,9 +286,34 @@ async function statusFor(engine: Engine, url: string, tabId?: number): Promise<C
 async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<unknown> {
   const tabId = sender.tab?.id;
   switch (msg.type) {
+    case 'linkContext': {
+      rememberClick([msg.url, msg.raw], {
+        context: String(msg.context ?? '').slice(0, 600),
+        anchor: String(msg.anchor ?? '').slice(0, 200),
+        from: String(msg.from ?? ''),
+        t: Date.now(),
+      });
+      return true;
+    }
+    case 'contextCheck': {
+      const settings = await getSettings();
+      if (!settings.enabled || (sender.url && isSiteDisabled(settings, new URL(sender.url).hostname))) return [];
+      const engine = await getEngine();
+      const out = msg.items.slice(0, 100).map((it) => {
+        const result = engine.check(it.url, { context: it.context, anchor: it.anchor });
+        const shortenerBrand =
+          result.shortener && /izloz|laim|balv|dāvan|giveaway|prize|login|pieslēd|apstiprin/i.test(`${it.anchor} ${it.context}`)
+            ? engine.brandsInText(`${it.anchor}\n${it.context}`)[0]?.name
+            : undefined;
+        return { key: it.key, result, shortenerBrand };
+      });
+      const bad = out.filter((o) => o.result.verdict === 'danger').map((o) => o.result);
+      await addLog(bad, 'page', 'marked');
+      return out;
+    }
     case 'serpCheck': {
       const settings = await getSettings();
-      if (!settings.enabled) return [];
+      if (!settings.enabled || (sender.url && isSiteDisabled(settings, new URL(sender.url).hostname))) return [];
       const engine = await getEngine();
       if (tabId != null && msg.query) await chrome.storage.session.set({ [`q:${tabId}`]: { q: msg.query, t: Date.now() } });
       const qBrands = engine.brandsInText(msg.query ?? '').map((b) => b.id);
@@ -285,7 +344,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
       }
       if (tabId != null && state) setBadge(tabId, state.result);
       return {
-        enabled: settings.enabled,
+        enabled: settings.enabled && !(sender.url && isSiteDisabled(settings, new URL(sender.url).hostname)),
         pageChecks: settings.pageChecks,
         result: state?.result,
         bypassed: state ? await isBypassed(state.result.host) : false,

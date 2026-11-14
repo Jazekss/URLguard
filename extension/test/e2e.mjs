@@ -63,6 +63,12 @@ const FIXTURES = {
   'https://lmt-bonuss.com/': `<!doctype html><html><head><title>LMT bonuss</title></head><body>
     <h1>Saņem LMT bonusu</h1><p>Pieslēdzieties ar Smart-ID</p><input name="personas_kods" placeholder="Personas kods"></body></html>`,
   'https://example.com/': `<!doctype html><html><head><title>Example</title></head><body>ok</body></html>`,
+  'https://www.facebook.com/feed-test': `<!doctype html><html><head><title>Facebook</title></head><body>
+    <div role="feed"><div role="article"><p>Lidl izloze! Laimē 500 € dāvanu karti – atbildi uz 3 jautājumiem 🎁</p>
+      <a id="scam" href="https://l.facebook.com/l.php?u=https%3A%2F%2Flidl-davanas.top%2Fclaim&h=x">lidl-davanas.top</a></div>
+    <div role="article"><p>Mūsu jaunais blogs par dārzu</p><a id="ok" href="https://l.facebook.com/l.php?u=https%3A%2F%2Fexample.org%2Fdarzs">example.org</a></div>
+    <div role="article"><p>Lidl dāvanu kartes izloze, spied šeit</p><a id="short" href="https://bit.ly/3lidlXyz">bit.ly/3lidlXyz</a></div></div></body></html>`,
+  'https://lucky-prize-claim.com/': `<!doctype html><html><head><title>Claim</title></head><body>prize</body></html>`,
 };
 
 async function newPage() {
@@ -70,6 +76,10 @@ async function newPage() {
   await page.setRequestInterception(true);
   page.on('request', (req) => {
     const body = FIXTURES[req.url()];
+    if (req.url() === 'https://bit.ly/3lidlXyz' && req.isNavigationRequest()) {
+      req.respond({ status: 302, headers: { location: 'https://lucky-prize-claim.com/' }, body: '' });
+      return;
+    }
     if (body && req.isNavigationRequest()) req.respond({ status: 200, contentType: 'text/html; charset=utf-8', body });
     else req.continue();
   });
@@ -199,6 +209,49 @@ try {
     await page.close();
   }
 
+  // 5b) Soc. tīkls: ieraksts par Lidl izlozi ar svešu saiti -> atzīme; parasts ieraksts -> nekas
+  {
+    const page = await newPage();
+    await page.goto('https://www.facebook.com/feed-test', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#scam urlguard-mark', { timeout: 8000 }).catch(() => {});
+    const marks = await page.evaluate(() => ({
+      scam: document.querySelector('#scam urlguard-mark')?.dataset.kind,
+      ok: !!document.querySelector('#ok urlguard-mark'),
+      short: document.querySelector('#short urlguard-mark')?.dataset.kind,
+      tip: document.querySelector('#scam urlguard-mark')?.title.split('\n')[0],
+    }));
+    ok('soc. tīkls: izlozes krāpšana atzīmēta', marks.scam === 'danger', marks.tip);
+    ok('soc. tīkls: parasta saite netiek atzīmēta', !marks.ok);
+    ok('soc. tīkls: saīsināta saite ar izlozi – brīdinājuma ikona', marks.short === 'warn');
+    // Klikšķis uz bit.ly -> 302 uz svešu domēnu -> brīdinājums ar ieraksta kontekstu
+    await page.click('#short');
+    const hit = await waitForUrl(page, (u) => u.includes('/warning.html?id='), 8000);
+    const reasons = hit ? await page.$eval('#reasons', (e) => e.textContent).catch(() => '') : '';
+    ok('bit.ly -> galamērķis pārbaudīts ar ieraksta kontekstu', hit && /Lidl/.test(reasons), (await currentUrl(page)).slice(0, 70));
+    await page.close();
+  }
+
+  // 5c) Vietnes izslēgšana: aizdomīgai lapai vairs nav joslas
+  {
+    const page = await browser.newPage();
+    await page.goto(`${BASE}/popup.html`, { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(() => {});
+    await page.evaluate(() => chrome.storage.sync.get('settings').then((s) => chrome.storage.sync.set({ settings: { ...s.settings, disabledSites: ['swedbankas.com'] } })));
+    await page.close();
+    const p2 = await newPage();
+    await p2.goto('https://swedbankas.com/', { waitUntil: 'domcontentloaded' });
+    await sleep(1500);
+    const bar = await p2.evaluate(() => [...document.documentElement.children].some((e) => e.style.zIndex === '2147483647'));
+    ok('izslēgtā vietnē nav joslas', !bar);
+    await p2.close();
+    const p3 = await browser.newPage();
+    await p3.goto(`${BASE}/popup.html`, { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(() => {});
+    await p3.waitForSelector('#disabledList li', { timeout: 4000 }).catch(() => {});
+    const listed = await p3.$$eval('#disabledList li span', (els) => els.map((e) => e.textContent));
+    ok('izslēgtā vietne redzama iestatījumos', listed.includes('swedbankas.com'), JSON.stringify(listed));
+    await p3.evaluate(() => chrome.storage.sync.get('settings').then((s) => chrome.storage.sync.set({ settings: { ...s.settings, disabledSites: [] } })));
+    await p3.close();
+  }
+
   // 6) Parasta lapa -> nekas nenotiek
   {
     const page = await newPage();
@@ -247,7 +300,7 @@ try {
     const before = await page.evaluate(() => chrome.runtime.sendMessage({ type: 'getStatus' }).then((s) => s.data.generated));
     const upd = await page.evaluate(() => chrome.runtime.sendMessage({ type: 'updateNow' }));
     const after = await page.evaluate(() => chrome.runtime.sendMessage({ type: 'getStatus' }).then((s) => s.data));
-    ok('bāzes atjaunināšana no releja', upd === 'updated' && after.domains > 1, `${upd}: ${before} -> ${after.generated}, bloķēti ${after.domains}`);
+    ok('bāzes atjaunināšana no releja', (upd === 'updated' || upd === 'up-to-date') && after.domains > 1 && !after.generated.startsWith('1970'), `${upd}: ${before} -> ${after.generated}, bloķēti ${after.domains}`);
     await page.close();
   }
 } catch (e) {

@@ -2,6 +2,7 @@
 import type { CheckResult } from '../core/types';
 import { detectEngine } from './serp-scan';
 import { initLang, reasonText, t } from '../i18n';
+import { watchClicks, watchSocial } from './links';
 
 const ID_FIELD = /personas\s*kod|personal\s*code|isikukood|asmens\s*kod|smart-?id|user\s*id|lietot[aā]j|tālr|talr|phone/i;
 const AUTH_TEXT = /smart-?id|e-?paraksts|mobile-?id|internetbank|personas\s*kod/i;
@@ -75,6 +76,8 @@ async function main() {
     bypassed: boolean;
   } | null;
   if (!init?.enabled) return;
+  watchClicks();
+  watchSocial();
   const v = init.result?.verdict;
   if (v === 'suspicious' && !init.bypassed) showBanner(init.result!);
   if (!init.pageChecks || v === 'official' || v === 'safe' || v === 'danger') return;

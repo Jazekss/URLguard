@@ -1,29 +1,24 @@
 {
   "ext.name": "URLguard – krāpnieku bloķētājs",
   "ext.desc": "Brīdina, ja saite tikai izliekas par banku, e-veselību vai VID. Atzīmē krāpnieku reklāmas meklētājā. Bez maksas, darbojas lokāli.",
-
   "popup.protection": "Aizsardzība",
   "consent.title": "Palīdzēsi parādīt, cik labi URLguard strādā?",
   "consent.text": "Reizi dienā tiktu nosūtīti **tikai skaitļi**: cik lapas bloķētas, cik brīdinājumu, cik ziņojumu. **Bez saitēm, bez laikiem, bez identifikatoriem.** Var izslēgt jebkurā brīdī.",
   "consent.what": "Kas tieši tiek sūtīts?",
   "consent.yes": "Jā, palīdzēt",
   "consent.no": "Nē, paldies",
-
   "status.thisPage": "Šī lapa",
   "status.checkedLink": "Pārbaudītā saite",
   "status.notChecked": "Netiek pārbaudīta",
   "status.officialOf": "Šī ir {brand} oficiālā lapa.",
   "status.officialAddr": "Oficiālā adrese:",
-
   "verdict.official": "Oficiālā lapa",
   "verdict.safe": "Droša lapa",
   "verdict.unknown": "Nav zināmu draudu",
   "verdict.suspicious": "Aizdomīga lapa",
   "verdict.danger": "Bīstama lapa",
-
   "stats.today": "bloķēts šodien",
   "stats.total": "brīdinājumi kopā",
-
   "report.title": "Ziņot",
   "report.kindPhish": "Krāpnieciska / viltota lapa",
   "report.kindFp": "Kļūdains brīdinājums – lapa ir droša",
@@ -36,7 +31,6 @@
   "report.okGithub": "Atvērta GitHub forma – pārbaudiet un nospiediet “Submit new issue”.",
   "report.fail": "Neizdevās: {error}",
   "report.noRepo": "Ziņojumu repozitorijs vēl nav iestatīts.",
-
   "log.title": "Pēdējie notikumi",
   "log.empty": "Vēl nekas nav bloķēts. 👍",
   "log.blocked": "bloķēta",
@@ -45,7 +39,6 @@
   "log.marked": "atzīmēta",
   "log.bypassed": "atvērta tomēr",
   "log.pretends": "Izliekas par: {brand}",
-
   "settings.title": "Iestatījumi",
   "settings.lang": "Valoda",
   "settings.langAuto": "Automātiski (pārlūka valoda)",
@@ -64,7 +57,6 @@
   "update.failed": "Neizdevās",
   "update.notConfigured": "Repo nav iestatīts",
   "data.info": "Bāze: {date} · {brands} zīmoli · {domains} bloķēti",
-
   "warn.pageTitle": "URLguard – bīstama lapa",
   "warn.title": "Uzmanību! Iespējama krāpnieku lapa",
   "warn.stopped": "URLguard apturēja šīs lapas atvēršanu.",
@@ -76,12 +68,10 @@
   "warn.proceed": "Tomēr atvērt (nav ieteicams)",
   "warn.confirm": "Vai tiešām atvērt {host}?\n\nNekad neievadiet šajā lapā paroles, Smart-ID vai kartes datus.",
   "warn.noInfo": "Nav informācijas par saiti.",
-
   "banner.title": "URLguard: šī lapa var būt viltota.",
   "banner.official": "Oficiālā adrese:",
   "banner.report": "Ziņot",
   "banner.close": "Aizvērt",
-
   "serp.hidden": "🛡 URLguard paslēpa krāpnieku saites: {n}.",
   "serp.show": "Parādīt",
   "serp.danger": "krāpnieku saite",
@@ -89,10 +79,8 @@
   "serp.warn": "aizdomīga saite",
   "serp.warnBrand": "aizdomīga saite – nav {brand} oficiālā adrese",
   "serp.ok": "{brand} oficiālā lapa",
-
   "menu.check": "URLguard: pārbaudīt saiti",
   "menu.report": "URLguard: ziņot par krāpniecisku saiti",
-
   "reason.feed-listed": "Adrese ir publiskā krāpnieku sarakstā (vēl nav apstiprināta).",
   "reason.blocklist": "Adrese ir zināmo krāpniecisko vietņu sarakstā.",
   "reason.official-embedded": "Adresē iestrādāts {brand} oficiālais domēns, bet lapa patiesībā atrodas citur ({domain}).",
@@ -111,5 +99,15 @@
   "reason.punycode": "Adresē ir nelatīņu (punycode) simboli.",
   "reason.search-mismatch": "Jūs meklējāt {brand}, bet šī saite neved uz {brand} oficiālo lapu.",
   "reason.login-on-lookalike": "Lapa prasa pieslēgšanās datus (parole / Smart-ID / personas kods).",
-  "reason.brand-login-unofficial": "Lapa izskatās pēc {brand} pieslēgšanās, bet atrodas adresē {domain}."
+  "reason.brand-login-unofficial": "Lapa izskatās pēc {brand} pieslēgšanās, bet atrodas adresē {domain}.",
+  "reason.context-mismatch": "Saite atvērta no ieraksta par {brand}, bet ved uz {domain}, kas nav {brand} oficiālā lapa.",
+  "reason.giveaway": "Ierakstā solīta izloze, balva vai dāvana – tipiska krāpnieku metode.",
+  "popup.disableSite": "Izslēgt šai vietnei",
+  "popup.enableSite": "Ieslēgt šai vietnei",
+  "status.disabledHere": "URLguard šai vietnei ir izslēgts",
+  "settings.disabledSites": "Vietnes, kurās pārbaude izslēgta",
+  "settings.noDisabled": "Nav",
+  "settings.remove": "Ieslēgt atkal",
+  "social.shortener": "Saīsināta saite – URLguard pārbaudīs galamērķi, kad to atvērsiet.",
+  "social.mismatch": "saite neved uz {brand} oficiālo lapu"
 }

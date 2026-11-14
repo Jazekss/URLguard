@@ -1,29 +1,24 @@
 {
   "ext.name": "URLguard – phishing protection",
   "ext.desc": "Warns when a link only pretends to be your bank or a government site. Flags scam ads in search. Free, works locally.",
-
   "popup.protection": "Protection",
   "consent.title": "Help show how well URLguard works?",
   "consent.text": "Once a day, **only numbers** would be sent: how many pages were blocked, how many warnings, how many reports. **No links, no timestamps, no identifiers.** You can turn it off any time.",
   "consent.what": "What exactly is sent?",
   "consent.yes": "Yes, help",
   "consent.no": "No, thanks",
-
   "status.thisPage": "This page",
   "status.checkedLink": "Checked link",
   "status.notChecked": "Not checked",
   "status.officialOf": "This is the official {brand} site.",
   "status.officialAddr": "Official address:",
-
   "verdict.official": "Official site",
   "verdict.safe": "Safe site",
   "verdict.unknown": "No known threats",
   "verdict.suspicious": "Suspicious site",
   "verdict.danger": "Dangerous site",
-
   "stats.today": "blocked today",
   "stats.total": "warnings in total",
-
   "report.title": "Report",
   "report.kindPhish": "Phishing / fake page",
   "report.kindFp": "Wrong warning – the page is safe",
@@ -36,7 +31,6 @@
   "report.okGithub": "A GitHub form has been opened – check it and press “Submit new issue”.",
   "report.fail": "Failed: {error}",
   "report.noRepo": "The report repository is not configured yet.",
-
   "log.title": "Recent events",
   "log.empty": "Nothing blocked yet. 👍",
   "log.blocked": "blocked",
@@ -45,7 +39,6 @@
   "log.marked": "marked",
   "log.bypassed": "opened anyway",
   "log.pretends": "Pretends to be: {brand}",
-
   "settings.title": "Settings",
   "settings.lang": "Language",
   "settings.langAuto": "Automatic (browser language)",
@@ -64,7 +57,6 @@
   "update.failed": "Failed",
   "update.notConfigured": "Repository not configured",
   "data.info": "Database: {date} · {brands} brands · {domains} blocked",
-
   "warn.pageTitle": "URLguard – dangerous page",
   "warn.title": "Warning! Possible phishing page",
   "warn.stopped": "URLguard stopped this page from opening.",
@@ -76,12 +68,10 @@
   "warn.proceed": "Open anyway (not recommended)",
   "warn.confirm": "Do you really want to open {host}?\n\nNever enter passwords, Smart-ID or card details on this page.",
   "warn.noInfo": "No information about the link.",
-
   "banner.title": "URLguard: this page may be fake.",
   "banner.official": "Official address:",
   "banner.report": "Report",
   "banner.close": "Close",
-
   "serp.hidden": "🛡 URLguard hid phishing links: {n}.",
   "serp.show": "Show",
   "serp.danger": "phishing link",
@@ -89,10 +79,8 @@
   "serp.warn": "suspicious link",
   "serp.warnBrand": "suspicious link – not the official {brand} address",
   "serp.ok": "official {brand} site",
-
   "menu.check": "URLguard: check link",
   "menu.report": "URLguard: report phishing link",
-
   "reason.feed-listed": "The address is on a public phishing list (not yet confirmed).",
   "reason.blocklist": "The address is on the list of known phishing sites.",
   "reason.official-embedded": "The address contains the official {brand} domain, but the page is actually somewhere else ({domain}).",
@@ -111,5 +99,15 @@
   "reason.punycode": "The address contains non-Latin (punycode) characters.",
   "reason.search-mismatch": "You searched for {brand}, but this link does not lead to the official {brand} site.",
   "reason.login-on-lookalike": "The page asks for login details (password / Smart-ID / personal ID code).",
-  "reason.brand-login-unofficial": "The page looks like a {brand} login, but it is located at {domain}."
+  "reason.brand-login-unofficial": "The page looks like a {brand} login, but it is located at {domain}.",
+  "reason.context-mismatch": "The link was opened from a post about {brand}, but it leads to {domain}, which is not the official {brand} site.",
+  "reason.giveaway": "The post promises a giveaway, prize or gift – a typical scam.",
+  "popup.disableSite": "Turn off for this site",
+  "popup.enableSite": "Turn on for this site",
+  "status.disabledHere": "URLguard is turned off for this site",
+  "settings.disabledSites": "Sites where checks are turned off",
+  "settings.noDisabled": "None",
+  "settings.remove": "Turn back on",
+  "social.shortener": "Shortened link – URLguard will check the destination when you open it.",
+  "social.mismatch": "the link does not lead to the official {brand} site"
 }

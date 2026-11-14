@@ -157,14 +157,16 @@ export async function buildBundle({ feeds = false } = {}) {
   return {
     version: SCHEMA_VERSION,
     generated: new Date().toISOString(),
-    brands: brands.map(({ id, name, category, url, official, keywords, strictKeywords, anyTld, weak, region }) => ({
+    brands: brands.map(({ id, name, category, url, official, keywords, strictKeywords, anyTld, weak, noTypo, region }) => ({
       id, name, category, url, official: withCompat({ official, anyTld }), keywords,
-      ...(strictKeywords ? { strictKeywords } : {}), ...(anyTld ? { anyTld } : {}), ...(weak ? { weak } : {}), region,
+      ...(strictKeywords ? { strictKeywords } : {}), ...(anyTld ? { anyTld } : {}), ...(weak ? { weak } : {}), ...(noTypo ? { noTypo } : {}), region,
     })),
     // suspect – jauns lauks (1.2.0+); vecākas versijas to vienkārši ignorē
     blocklist: { domains, urls, suspect },
     allowlist,
     sharedHosting,
+    // shorteners – jauns lauks (1.3.0+); vecākas versijas to ignorē
+    shorteners: uniq(readList('lists/shorteners.txt')),
   };
 }
 

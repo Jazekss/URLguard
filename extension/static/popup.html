@@ -40,6 +40,9 @@
     .consent { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
     .consent p { margin: 6px 0 10px; }
     .row-btns { display: flex; gap: 8px; }
+    #siteToggle { margin-top: 6px; display: block; }
+    .sites { list-style: none; margin: 4px 0 0; padding: 0; }
+    .sites li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--border); }
     .footer { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
   </style>
 </head>
@@ -61,6 +64,7 @@
       <div class="head"><span class="pill" id="verdict">…</span><span class="muted small" id="statusSrc"></span></div>
       <div class="host" id="host"></div>
       <ul id="reasons"></ul>
+      <button type="button" class="link small" id="siteToggle" hidden></button>
       <div id="officialBox" class="small" hidden><span data-i18n="status.officialAddr"></span> <a id="officialLink" target="_blank" rel="noopener"></a></div>
     </section>
 
@@ -106,6 +110,9 @@
           <label class="row"><input type="checkbox" id="serpOfficialBadge"> <span data-i18n="settings.officialBadge"></span></label>
           <label class="row"><input type="checkbox" id="pageChecks"> <span data-i18n="settings.pageChecks"></span></label>
           <label class="row"><input type="checkbox" id="shareStats"> <span data-i18n="settings.stats"></span></label>
+          <div class="small"><span data-i18n="settings.disabledSites"></span>
+            <ul class="sites" id="disabledList"></ul>
+          </div>
           <label class="small"><span data-i18n="settings.endpoint"></span>
             <input type="text" id="reportEndpoint" placeholder="https://…workers.dev/report">
           </label>

@@ -22,6 +22,11 @@ const PHISH_WORDS = [
 /** Galotnes, kurās domēnus var reģistrēt tikai valsts iestādes – uzskatām par drošām. */
 const TRUSTED_SUFFIXES = new Set(['gov.lv', 'mil.lv', 'gov.lt', 'gov.ee', 'gov.uk', 'europa.eu']);
 
+/** Izlozes / balvas vārdi ierakstā – tipiska soc. tīklu krāpšana ("Lidl izloze"). */
+const GIVEAWAY = /izloz|laim[eē]|balv|d[aā]van|d[aā]vin|konkurs|giveaway|\bwin\b|prize|розыгрыш|приз|подар|выигр|loterij|dovan|laimėk|auhind|loos/i;
+/** Darbības vārdi, ar kuriem izvilina datus. */
+const ACTION = /pieslēd|pieteik|apstiprin|atjaunin|verific|verify|login|log in|sign in|bloķ|aptur|atmaks|kompens|refund|paka|sūtījum|parcel|delivery|войти|подтверд|посылк/i;
+
 const COUNTRY_TOKENS = new Set(['lv', 'latvija', 'latvia', 'lat', 'riga', 'gov', 'eu']);
 const TLD_LIKE = '(lv|com|gov|ee|lt|eu|net|org)';
 const AUTH_MARKERS = /smart-?id|e-?paraksts|mobile-?id|internetbank|internetbanka|personas\s?kod/i;
@@ -64,7 +69,8 @@ function embeds(host: string, d: string, brandWords: Set<string>, globalBrand = 
     // "my-swedbank.lv" – atdarinājums; "intercom-messenger.com", "ks-live.com" – parasts vārds, nejaušība
     // Īss globāla zīmola vārds (Apple me.com -> me.com.br) – nejaušība; vietējiem (ss.lv, lg.lv) – atdarinājums
     if (label.length < 4 && globalBrand && !brandWords.has(norm(label))) return false;
-    const beforeOk = before === '' || before === '.' || (before === '-' && brandWords.has(norm(label)));
+    // globāls zīmols ar savu nosaukumu domēna daļā (images-amazon.com, stores-apple.com) – parasti pats zīmols
+    const beforeOk = before === '' || before === '.' || (before === '-' && brandWords.has(norm(label)) && !globalBrand);
     if (beforeOk && (after === '' || after === '.' || after === '-')) return true;
   }
   return false;
@@ -81,6 +87,7 @@ export class Engine {
   private allow: Set<string>;
   private block: Set<string>;
   private suspect: Set<string>;
+  private shorteners: Set<string>;
   private blockUrls: string[];
   private shared: string[];
   private kws: KwEntry[] = [];
@@ -108,6 +115,7 @@ export class Engine {
     this.allow = new Set(bundle.allowlist.map((d) => d.toLowerCase()));
     this.block = new Set(bundle.blocklist.domains.map((d) => d.toLowerCase()));
     this.suspect = new Set((bundle.blocklist.suspect ?? []).map((d) => d.toLowerCase()));
+    this.shorteners = new Set((bundle.shorteners ?? []).map((d) => d.toLowerCase()));
     this.blockUrls = bundle.blocklist.urls.map((u) => u.toLowerCase());
     this.shared = bundle.sharedHosting.map((d) => d.toLowerCase());
   }
@@ -118,11 +126,19 @@ export class Engine {
    */
   private isTypo(e: KwEntry, dNorm: string, dTokens: string[], suffix: string, tld: string): boolean {
     const n = e.kw.length;
-    if (e.strict || n < 6) return false;
+    if (e.strict || n < 6 || e.brand.noTypo) return false;
     if (n <= 7 && !(this.officialSuffixes.get(e.brand.id)?.has(suffix) || SUSPICIOUS_TLDS.has(tld))) return false;
     const max = n >= 11 ? 2 : 1;
     if (dNorm !== e.kw && levenshtein(dNorm, e.kw, max) <= max) return true;
     return dTokens.some((t) => t !== e.kw && t.length >= n - 1 && levenshtein(t, e.kw, 1) <= 1);
+  }
+
+  isShortener(raw: string): boolean {
+    try {
+      return this.shorteners.has(new URL(raw).hostname.toLowerCase().replace(/^www\./, ''));
+    } catch {
+      return false;
+    }
   }
 
   get brands(): Brand[] {
@@ -178,12 +194,15 @@ export class Engine {
       return { ...base, domain, verdict: 'official', score: 0, reasons: [], brand: ref(b) };
     }
     // 3) Baltais saraksts un valsts galotnes (gov.lv u.c.)
-    if (matchUpTo(this.allow, host, icannDomain) || TRUSTED_SUFFIXES.has(icann.publicSuffix ?? '') || host === 'europa.eu' || host.endsWith('.europa.eu')) {
+    if (matchUpTo(this.allow, host, icannDomain) || TRUSTED_SUFFIXES.has(icann.publicSuffix ?? '') || /^((gov|gouv|gob|go|govt|mil)\.[a-z]{2}|gov|mil)$/.test(icann.publicSuffix ?? '') || host === 'europa.eu' || host.endsWith('.europa.eu')) {
       return { ...base, domain, verdict: 'safe', score: 0, reasons: [] };
     }
     // 4) Bloķētie domēni
     if (matchUpTo(this.block, host, domain)) {
       return { ...base, domain, verdict: 'danger', score: 100, listed: 'domain', reasons: [this.reason('blocklist', {})] };
+    }
+    if (this.shorteners.has(host.replace(/^www\./, ''))) {
+      return { ...base, domain, verdict: 'unknown', score: 0, reasons: [], shortener: true };
     }
     if (p.isIp || !p.domain || (!p.isIcann && !p.isPrivate)) {
       return { ...base, domain, verdict: 'unknown', score: 0, reasons: [] };
@@ -217,7 +236,7 @@ export class Engine {
       else if (dSkel === e.skel) [s, code] = [70, 'homoglyph'];
       else if (dTokens.includes(e.kw)) [s, code] = [50, 'brand-in-domain'];
       else if (dNorm.includes(e.kw)) [s, code] = [45, 'brand-in-domain'];
-      else if (dSkel.includes(e.skel)) [s, code] = [65, 'homoglyph'];
+      else if (e.kw.length >= 6 && dSkel.includes(e.skel)) [s, code] = [65, 'homoglyph'];
       else if (this.isTypo(e, dNorm, dTokens, p.publicSuffix ?? '', tld)) {
         // drukas kļūda + tā pati galotne kā oficiālajam (swedbamk.lv, steamcommunlty.com) = ļoti aizdomīgi
         const sameTld = this.officialSuffixes.get(e.brand.id)?.has(p.publicSuffix ?? '-') ?? false;
@@ -244,10 +263,24 @@ export class Engine {
     const hit = best as BrandHit | null;
     const qBrands = ctx.query ? this.brandsInText(ctx.query) : [];
 
+    // Konteksts, no kura saite atvērta (soc. tīkla ieraksts, e-pasts)
+    const ctxText = ctx.context || ctx.anchor ? `${ctx.anchor ?? ''}\n${ctx.context ?? ''}` : '';
+    const ctxGiveaway = !!ctxText && GIVEAWAY.test(ctxText);
+    const ctxStrong = !!ctxText && (ctxGiveaway || ACTION.test(ctxText));
+
     if (hit) {
       brand = hit.brand;
       score = hit.score;
       reasons.push(this.reason(hit.code, { brand, domain, tld }));
+      // Domēns atdarina zīmolu UN ieraksts par to pašu zīmolu aicina rīkoties / sola balvu -> stiprāks signāls
+      if (ctxStrong && this.brandsInText(ctxText).includes(hit.brand)) {
+        score += 20;
+        reasons.push(this.reason('context-mismatch', { brand, domain }));
+        if (ctxGiveaway) {
+          score += 25;
+          reasons.push(this.reason('giveaway', {}));
+        }
+      }
     } else if (ctx.isAd && ctx.title) {
       const tBrands = this.brandsInText(ctx.title);
       const b = tBrands.find((x) => qBrands.includes(x)) ?? tBrands[0];
@@ -255,6 +288,23 @@ export class Engine {
         brand = b;
         score = 45;
         reasons.push(this.reason('ad-impersonation', { brand, domain }));
+      }
+    } else if (ctx.context || ctx.anchor) {
+      // Saite atvērta no ieraksta par zīmolu, bet ved citur ("Lidl izloze" -> lidl-davanas.top)
+      const text = `${ctx.anchor ?? ''}\n${ctx.context ?? ''}`;
+      const aBrands = ctx.anchor ? this.brandsInText(ctx.anchor) : [];
+      const cBrands = this.brandsInText(text);
+      const giveaway = GIVEAWAY.test(text);
+      const strong = aBrands.length > 0 || giveaway || ACTION.test(text);
+      const b = aBrands[0] ?? cBrands[0];
+      if (b && strong) {
+        brand = b;
+        score = 45;
+        reasons.push(this.reason('context-mismatch', { brand, domain }));
+        if (giveaway) {
+          score += 25;
+          reasons.push(this.reason('giveaway', {}));
+        }
       }
     }
 

@@ -13,6 +13,8 @@ export interface Settings {
   shareStats: boolean | null;
   /** Saskarnes valoda: 'auto' = pārlūka valoda. */
   lang: string;
+  /** Reģistrējamie domēni, kuros lietotājs pārbaudi izslēdzis. */
+  disabledSites: string[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -23,6 +25,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reportEndpoint: '',
   shareStats: null,
   lang: 'auto',
+  disabledSites: [],
 };
 
 export async function getSettings(): Promise<Settings> {
@@ -34,6 +37,19 @@ export async function saveSettings(patch: Partial<Settings>): Promise<Settings> 
   const next = { ...(await getSettings()), ...patch };
   await chrome.storage.sync.set({ settings: next });
   return next;
+}
+
+/** Vietnes atslēga izslēgšanai: reģistrējamais domēns (mail.google.com -> google.com). */
+export function siteKey(host: string): string {
+  const parts = host.toLowerCase().replace(/\.$/, '').split('.');
+  const twoLevel = /^(com|co|org|net|gov|edu|ac)\.[a-z]{2}$/.test(parts.slice(-2).join('.'));
+  return parts.slice(twoLevel ? -3 : -2).join('.');
+}
+
+export function isSiteDisabled(s: Settings, host: string): boolean {
+  if (!host || !s.disabledSites?.length) return false;
+  const h = host.toLowerCase();
+  return s.disabledSites.some((d) => h === d || h.endsWith('.' + d));
 }
 
 export interface LogEntry {

@@ -52,6 +52,15 @@ export function unwrap(href: string, base: string): string {
     }
   }
   if (h.endsWith('duckduckgo.com') && u.pathname === '/l/') return u.searchParams.get('uddg') || u.href;
+  // Soc. tīklu pāradresācijas saites -> īstais galamērķis
+  const param = (k: string) => u.searchParams.get(k);
+  if (/(^|\.)facebook\.com$/.test(h) && u.pathname.startsWith('/l.php')) return param('u') || u.href;
+  if (h === 'l.instagram.com') return param('u') || u.href;
+  if (h === 'out.reddit.com') return param('url') || u.href;
+  if (/(^|\.)youtube\.com$/.test(h) && u.pathname === '/redirect') return param('q') || u.href;
+  if (/(^|\.)linkedin\.com$/.test(h) && u.pathname.startsWith('/redir/')) return param('url') || u.href;
+  if (/(^|\.)vk\.com$/.test(h) && u.pathname === '/away.php') return param('to') || u.href;
+  if (h === 'href.li' || h === 'l.messenger.com') return param('u') || u.href;
   return u.href;
 }
 

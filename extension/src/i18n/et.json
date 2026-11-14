@@ -1,29 +1,24 @@
 {
   "ext.name": "URLguard – petulinkide kaitse",
   "ext.desc": "Hoiatab, kui link teeskleb olevat pank või riigiportaal. Märgib petureklaamid otsingus. Tasuta, töötab kohapeal.",
-
   "popup.protection": "Kaitse",
   "consent.title": "Kas aitad näidata, kui hästi URLguard töötab?",
   "consent.text": "Kord päevas saadetaks **ainult numbrid**: mitu lehte blokeeriti, mitu hoiatust, mitu teadet. **Ilma linkide, kellaaegade ja tunnusteta.** Saad selle igal ajal välja lülitada.",
   "consent.what": "Mida täpselt saadetakse?",
   "consent.yes": "Jah, aitan",
   "consent.no": "Ei, aitäh",
-
   "status.thisPage": "See leht",
   "status.checkedLink": "Kontrollitud link",
   "status.notChecked": "Ei kontrollita",
   "status.officialOf": "See on {brand} ametlik leht.",
   "status.officialAddr": "Ametlik aadress:",
-
   "verdict.official": "Ametlik leht",
   "verdict.safe": "Turvaline leht",
   "verdict.unknown": "Teadaolevaid ohte pole",
   "verdict.suspicious": "Kahtlane leht",
   "verdict.danger": "Ohtlik leht",
-
   "stats.today": "täna blokeeritud",
   "stats.total": "hoiatusi kokku",
-
   "report.title": "Teata",
   "report.kindPhish": "Petuleht / võltsitud leht",
   "report.kindFp": "Vale hoiatus – leht on turvaline",
@@ -36,7 +31,6 @@
   "report.okGithub": "Avati GitHubi vorm – kontrolli seda ja vajuta „Submit new issue“.",
   "report.fail": "Ebaõnnestus: {error}",
   "report.noRepo": "Teadete hoidla pole veel seadistatud.",
-
   "log.title": "Viimased sündmused",
   "log.empty": "Veel pole midagi blokeeritud. 👍",
   "log.blocked": "blokeeritud",
@@ -45,7 +39,6 @@
   "log.marked": "märgitud",
   "log.bypassed": "avati siiski",
   "log.pretends": "Teeskleb: {brand}",
-
   "settings.title": "Seaded",
   "settings.lang": "Keel",
   "settings.langAuto": "Automaatne (brauseri keel)",
@@ -64,7 +57,6 @@
   "update.failed": "Ebaõnnestus",
   "update.notConfigured": "Hoidla pole seadistatud",
   "data.info": "Andmebaas: {date} · kaubamärke: {brands} · blokeeritud: {domains}",
-
   "warn.pageTitle": "URLguard – ohtlik leht",
   "warn.title": "Tähelepanu! Võimalik petuleht",
   "warn.stopped": "URLguard peatas selle lehe avamise.",
@@ -76,12 +68,10 @@
   "warn.proceed": "Ava siiski (ei soovitata)",
   "warn.confirm": "Kas soovid tõesti avada {host}?\n\nÄra kunagi sisesta sellel lehel paroole, Smart-ID-d ega kaardiandmeid.",
   "warn.noInfo": "Lingi kohta info puudub.",
-
   "banner.title": "URLguard: see leht võib olla võltsitud.",
   "banner.official": "Ametlik aadress:",
   "banner.report": "Teata",
   "banner.close": "Sulge",
-
   "serp.hidden": "🛡 URLguard peitis petulingid: {n}.",
   "serp.show": "Näita",
   "serp.danger": "petulink",
@@ -89,10 +79,8 @@
   "serp.warn": "kahtlane link",
   "serp.warnBrand": "kahtlane link – ei ole {brand} ametlik aadress",
   "serp.ok": "{brand} ametlik leht",
-
   "menu.check": "URLguard: kontrolli linki",
   "menu.report": "URLguard: teata petulingist",
-
   "reason.feed-listed": "Aadress on avalikus petulehtede nimekirjas (veel kinnitamata).",
   "reason.blocklist": "Aadress on teadaolevate petulehtede nimekirjas.",
   "reason.official-embedded": "Aadressi on lisatud {brand} ametlik domeen, kuid leht asub tegelikult mujal ({domain}).",
@@ -111,5 +99,15 @@
   "reason.punycode": "Aadressis on mitteladina (punycode) märke.",
   "reason.search-mismatch": "Otsisid {brand}, kuid see link ei vii {brand} ametlikule lehele.",
   "reason.login-on-lookalike": "Leht küsib sisselogimisandmeid (parool / Smart-ID / isikukood).",
-  "reason.brand-login-unofficial": "Leht näeb välja nagu {brand} sisselogimine, kuid asub aadressil {domain}."
+  "reason.brand-login-unofficial": "Leht näeb välja nagu {brand} sisselogimine, kuid asub aadressil {domain}.",
+  "reason.context-mismatch": "Link avati postitusest {brand} kohta, kuid see viib aadressile {domain}, mis ei ole {brand} ametlik leht.",
+  "reason.giveaway": "Postitus lubab loosimist, auhinda või kingitust – tüüpiline pettus.",
+  "popup.disableSite": "Lülita sellel saidil välja",
+  "popup.enableSite": "Lülita sellel saidil sisse",
+  "status.disabledHere": "URLguard on sellel saidil välja lülitatud",
+  "settings.disabledSites": "Saidid, kus kontroll on välja lülitatud",
+  "settings.noDisabled": "Puuduvad",
+  "settings.remove": "Lülita uuesti sisse",
+  "social.shortener": "Lühendatud link – URLguard kontrollib sihtkohta, kui selle avad.",
+  "social.mismatch": "link ei vii {brand} ametlikule lehele"
 }

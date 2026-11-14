@@ -1,29 +1,24 @@
 {
   "ext.name": "URLguard – apsauga nuo sukčių",
   "ext.desc": "Įspėja, jei nuoroda apsimeta banku ar valstybės portalu. Pažymi sukčių reklamas paieškoje. Nemokama, veikia vietoje.",
-
   "popup.protection": "Apsauga",
   "consent.title": "Padėsite parodyti, kaip gerai veikia URLguard?",
   "consent.text": "Kartą per dieną būtų siunčiami **tik skaičiai**: kiek puslapių užblokuota, kiek įspėjimų, kiek pranešimų. **Be nuorodų, be laiko, be identifikatorių.** Galima išjungti bet kada.",
   "consent.what": "Kas tiksliai siunčiama?",
   "consent.yes": "Taip, padėti",
   "consent.no": "Ne, ačiū",
-
   "status.thisPage": "Šis puslapis",
   "status.checkedLink": "Patikrinta nuoroda",
   "status.notChecked": "Netikrinama",
   "status.officialOf": "Tai oficiali {brand} svetainė.",
   "status.officialAddr": "Oficialus adresas:",
-
   "verdict.official": "Oficiali svetainė",
   "verdict.safe": "Saugi svetainė",
   "verdict.unknown": "Žinomų grėsmių nėra",
   "verdict.suspicious": "Įtartina svetainė",
   "verdict.danger": "Pavojinga svetainė",
-
   "stats.today": "užblokuota šiandien",
   "stats.total": "įspėjimų iš viso",
-
   "report.title": "Pranešti",
   "report.kindPhish": "Sukčių / netikras puslapis",
   "report.kindFp": "Klaidingas įspėjimas – puslapis saugus",
@@ -36,7 +31,6 @@
   "report.okGithub": "Atidaryta GitHub forma – patikrinkite ją ir spauskite „Submit new issue“.",
   "report.fail": "Nepavyko: {error}",
   "report.noRepo": "Pranešimų saugykla dar nesukonfigūruota.",
-
   "log.title": "Paskutiniai įvykiai",
   "log.empty": "Kol kas nieko neužblokuota. 👍",
   "log.blocked": "užblokuota",
@@ -45,7 +39,6 @@
   "log.marked": "pažymėta",
   "log.bypassed": "atidaryta vis tiek",
   "log.pretends": "Apsimeta: {brand}",
-
   "settings.title": "Nustatymai",
   "settings.lang": "Kalba",
   "settings.langAuto": "Automatiškai (naršyklės kalba)",
@@ -64,7 +57,6 @@
   "update.failed": "Nepavyko",
   "update.notConfigured": "Saugykla nesukonfigūruota",
   "data.info": "Duomenų bazė: {date} · prekės ženklų: {brands} · užblokuota: {domains}",
-
   "warn.pageTitle": "URLguard – pavojingas puslapis",
   "warn.title": "Dėmesio! Galimai sukčių puslapis",
   "warn.stopped": "URLguard sustabdė šio puslapio atidarymą.",
@@ -76,12 +68,10 @@
   "warn.proceed": "Vis tiek atidaryti (nerekomenduojama)",
   "warn.confirm": "Ar tikrai norite atidaryti {host}?\n\nNiekada neveskite šiame puslapyje slaptažodžių, Smart-ID ar kortelės duomenų.",
   "warn.noInfo": "Informacijos apie nuorodą nėra.",
-
   "banner.title": "URLguard: šis puslapis gali būti netikras.",
   "banner.official": "Oficialus adresas:",
   "banner.report": "Pranešti",
   "banner.close": "Uždaryti",
-
   "serp.hidden": "🛡 URLguard paslėpė sukčių nuorodas: {n}.",
   "serp.show": "Rodyti",
   "serp.danger": "sukčių nuoroda",
@@ -89,10 +79,8 @@
   "serp.warn": "įtartina nuoroda",
   "serp.warnBrand": "įtartina nuoroda – ne oficialus {brand} adresas",
   "serp.ok": "oficiali {brand} svetainė",
-
   "menu.check": "URLguard: patikrinti nuorodą",
   "menu.report": "URLguard: pranešti apie sukčių nuorodą",
-
   "reason.feed-listed": "Adresas yra viešame sukčių sąraše (dar nepatvirtinta).",
   "reason.blocklist": "Adresas yra žinomų sukčių svetainių sąraše.",
   "reason.official-embedded": "Adrese įterptas oficialus {brand} domenas, bet puslapis iš tikrųjų yra kitur ({domain}).",
@@ -111,5 +99,15 @@
   "reason.punycode": "Adrese yra nelotyniškų (punycode) simbolių.",
   "reason.search-mismatch": "Ieškojote {brand}, bet ši nuoroda neveda į oficialią {brand} svetainę.",
   "reason.login-on-lookalike": "Puslapis prašo prisijungimo duomenų (slaptažodžio / Smart-ID / asmens kodo).",
-  "reason.brand-login-unofficial": "Puslapis atrodo kaip {brand} prisijungimas, bet yra adresu {domain}."
+  "reason.brand-login-unofficial": "Puslapis atrodo kaip {brand} prisijungimas, bet yra adresu {domain}.",
+  "reason.context-mismatch": "Nuoroda atidaryta iš įrašo apie {brand}, bet veda į {domain} – tai ne oficiali {brand} svetainė.",
+  "reason.giveaway": "Įraše žadamas žaidimas, prizas ar dovana – tipinis sukčių būdas.",
+  "popup.disableSite": "Išjungti šiai svetainei",
+  "popup.enableSite": "Įjungti šiai svetainei",
+  "status.disabledHere": "URLguard šiai svetainei išjungtas",
+  "settings.disabledSites": "Svetainės, kuriose tikrinimas išjungtas",
+  "settings.noDisabled": "Nėra",
+  "settings.remove": "Vėl įjungti",
+  "social.shortener": "Sutrumpinta nuoroda – URLguard patikrins paskirties adresą ją atidarius.",
+  "social.mismatch": "nuoroda neveda į oficialią {brand} svetainę"
 }

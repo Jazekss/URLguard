@@ -1,0 +1,26 @@
+# Saišu saīsinātāji: paši par sevi nav bīstami, bet slēpj galamērķi.
+# URLguard atceras, no kā saite atvērta, un pārbauda galamērķi pēc pāradresācijas.
+bit.ly
+bitly.com
+t.co
+tinyurl.com
+is.gd
+v.gd
+cutt.ly
+rebrand.ly
+ow.ly
+buff.ly
+s.id
+shorturl.at
+tiny.cc
+t.ly
+rb.gy
+lnkd.in
+qrco.de
+short.io
+bl.ink
+soo.gd
+clck.ru
+u.to
+shorte.st
+adf.ly
