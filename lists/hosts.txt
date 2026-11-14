@@ -1,0 +1,9 @@
+# Title: URLguard – Baltic phishing blocklist
+# Description: Phishing domains impersonating Baltic banks, government portals and other brands. Reviewed by people.
+# Homepage: https://github.com/Jazekss/URLguard
+# Report: https://github.com/Jazekss/URLguard/issues/new?template=report.yml
+# Last modified: 2026-11-14T14:44:13.995Z
+# Entries: 0
+# License: CC0-1.0 (public domain) – https://creativecommons.org/publicdomain/zero/1.0/
+# Expires: 1 day
+
