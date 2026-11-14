@@ -108,6 +108,7 @@ for (const target of ['chrome', 'firefox']) {
     format: 'iife',
     target: ['chrome120', 'firefox140'],
     minify: !dev && target === 'chrome', // Firefox (AMO) – neminificēts, lai pārbaudītāji var lasīt kodu
+    minifySyntax: true, // tikai neizmantoto zaru izņemšana (piem., Chrome-specifisks kods Firefox būvē); nosaukumi un atstarpes paliek
     sourcemap: dev ? 'inline' : false,
     legalComments: 'none',
     define: { __PUBKEY__: JSON.stringify(PUBKEY), __DATA_REPO__: JSON.stringify(REPO), __TARGET__: JSON.stringify(target) },

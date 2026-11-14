@@ -3,6 +3,8 @@ import { SCHEMA_VERSION, type Bundle, type CheckResult, type Verdict } from './c
 import { verifyBundle } from './core/signature';
 import { initLang, t } from './i18n';
 import { iconImages, type IconState } from './icon';
+
+declare const __TARGET__: 'chrome' | 'firefox';
 import { BUNDLE_URLS, DATA_REPO, PUBLIC_KEY_B64, STATS_ENDPOINT, TARGET, UPDATE_PERIOD_MIN } from './config';
 import { cleanUrl, EMPTY_STATS, getSettings, isSiteDisabled, type LogEntry, type SerpItemIn, type SerpItemOut, type StatCounts } from './shared';
 
@@ -442,7 +444,8 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     case 'checkUpdate': {
       const type = await installType();
       let status = 'unsupported';
-      if (type === 'normal' || type === 'admin') {
+      // Firefox papildinājumus atjaunina pats (requestUpdateCheck tur nav) – šis zars Firefox būvē tiek izņemts
+      if (__TARGET__ === 'chrome' && (type === 'normal' || type === 'admin')) {
         // No veikala: pārlūks lejupielādē; onUpdateAvailable to uzreiz piemēro
         try {
           const r = (await chrome.runtime.requestUpdateCheck()) as unknown as { status: string } | string;
