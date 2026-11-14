@@ -17,6 +17,8 @@ KO URLGUARD DARA
 • Meklētājā (Google, Bing, DuckDuckGo) pie krāpnieku reklāmām parāda sarkanu ✕, pie oficiālajām lapām – zaļu ✓. Pēc izvēles krāpnieku saites var arī paslēpt.
 • Brīdina, ja lapa prasa Smart-ID, eParaksts, personas kodu vai paroli, bet adrese nav oficiālā.
 • Piedāvā pogu "Doties uz oficiālo lapu".
+• Sociālajos tīklos (Facebook, Instagram, X, TikTok, LinkedIn, Reddit, YouTube) atzīmē ierakstus, kas runā par zīmolu – piem., "Lidl izloze" –, bet saite ved citur. Saīsinātās saites (bit.ly, t.co…) tiek pārbaudītas pēc īstā galamērķa.
+• Pārbaudi var izslēgt vienai vietnei vai visur ar vienu klikšķi. Ikona rāda stāvokli: zaļa ✓, pelēka – (izslēgts), oranža ! (aizdomīgs), sarkana ✕ (bīstams).
 
 NEUZBĀZĪGS
 Parastās lapās URLguard neko nerāda. Aizdomīgām lapām – tikai šaura josla augšā. Pilnekrāna brīdinājums – tikai, ja lapa tiešām bīstama.

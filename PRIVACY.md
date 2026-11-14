@@ -8,10 +8,13 @@ URLguard ir veidots tā, lai **nekas par jums nepamestu jūsu datoru**, ja vien 
 - Meklētāju (Google, Bing, DuckDuckGo) rezultātu pārbaude.
 - Lapas satura pārbaude (vai lapā ir pieslēgšanās forma, Smart-ID, personas koda lauks).
 - Notikumu žurnāls popup logā – glabājas tikai jūsu pārlūkā.
+- Saites konteksts: kad uzklikšķināt uz saites, URLguard uz brīdi (līdz 20 sekundēm) atceras tā ieraksta tekstu, no kura saite atvērta, lai salīdzinātu to ar atvērto lapu. Tas notiek tikai jūsu pārlūkā un netiek saglabāts vai sūtīts.
+- Izslēgto vietņu saraksts un iestatījumi – sinhronizējas tikai caur jūsu pārlūka kontu (ja tas ieslēgts).
 
 ## Ko URLguard lejupielādē
 
 - **Krāpnieku saišu bāzi** no mūsu releja (rezerve – GitHub/jsDelivr) ik pēc 6 stundām. Tā ir viena un tā pati visiem lietotājiem – pēc tās nevar noteikt, ko jūs apmeklējat.
+- **Jaunākās versijas numuru** no GitHub (api.github.com) – lai paziņotu, ja ir pieejams atjauninājums. Pieprasījumā nav nekādu jūsu datu.
 
 ## Ko URLguard nosūta – tikai ar jūsu darbību vai piekrišanu
 
@@ -53,5 +56,6 @@ Ziņojumus un statistiku pieņem neliels Cloudflare Worker ([relay/src/worker.ts
 | `storage` | iestatījumi, žurnāls, bāze |
 | `alarms` | bāzes atjaunināšana, statistikas sūtīšana |
 | `contextMenus` | "Pārbaudīt / ziņot par saiti" ar labo klikšķi |
+| `theme` (tikai Firefox) | lai ikonu pēc izvēles rādītu pārlūka tēmas akcenta krāsā |
 
 Jautājumi: atveriet [issue](https://github.com/Jazekss/URLguard/issues).

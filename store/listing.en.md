@@ -17,6 +17,8 @@ WHAT IT DOES
 • In search results (Google, Bing, DuckDuckGo) shows a red ✕ next to scam ads and a green ✓ next to the official site. Scam results can optionally be hidden.
 • Warns when a page asks for Smart-ID, eParaksts, a personal ID code or a password on a non-official address.
 • Offers a "Go to the official site" button.
+• Social media (Facebook, Instagram, X, TikTok, LinkedIn, Reddit, YouTube): flags posts that talk about a brand – e.g. a "Lidl giveaway" – but link somewhere else. Shortened links (bit.ly, t.co…) are checked at their real destination.
+• Turn checks off for a single site, or everywhere, in one click. The toolbar icon shows the state: green ✓, grey – (off), orange ! (suspicious), red ✕ (dangerous).
 
 NOT ANNOYING
 Nothing is shown on normal pages. Suspicious pages get a thin bar at the top. A full-page warning appears only for pages that are really dangerous.

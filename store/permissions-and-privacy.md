@@ -15,6 +15,7 @@ URLguard protects users from phishing websites: it checks the links the user ope
 | `storage`, `unlimitedStorage` | Store settings, the local event log shown in the popup, and the signed phishing database (can exceed 5 MB when external feeds grow). |
 | `alarms` | Refresh the phishing database every 6 hours; send the opt-in daily statistics. |
 | `contextMenus` | "Check link" / "Report phishing link" on right-click. |
+| `theme` (Firefox only) | Optionally show the toolbar icon in the browser theme's accent colour. |
 | Remote code | **No remote code.** Only a signed JSON data file (domain lists) is downloaded; its Ed25519 signature is verified before use. |
 
 ## Data usage (Chrome "Privacy practices" tab)
