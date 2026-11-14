@@ -15,6 +15,8 @@ export interface Settings {
   lang: string;
   /** Reģistrējamie domēni, kuros lietotājs pārbaudi izslēdzis. */
   disabledSites: string[];
+  /** Firefox: rīkjoslas ikona pārlūka tēmas akcenta krāsā (miera stāvoklī). */
+  accentIcon: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -26,6 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   shareStats: null,
   lang: 'auto',
   disabledSites: [],
+  accentIcon: false,
 };
 
 export async function getSettings(): Promise<Settings> {

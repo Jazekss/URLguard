@@ -12,6 +12,7 @@ interface Status {
   result: CheckResult | null;
   data: { generated: string; brands: number; domains: number; lastUpdateCheck?: number; repoConfigured: boolean };
   log: LogEntry[];
+  update?: { current: string; latest: { version: string; url?: string } | null; installType: string };
 }
 
 let activeTabId: number | undefined;
@@ -141,7 +142,52 @@ function initSites(s: Settings, url: string | undefined) {
   };
 }
 
+/** Atjauninājumi: paziņojums augšā (ja jaunāka versija) + pārbaudes poga iestatījumos. */
+function initUpdates(u: Status['update']) {
+  if (!u) return;
+  $('versionInfo').textContent = t('settings.version', { version: u.current });
+  const run = async (btn: HTMLButtonElement, msgEl?: HTMLElement) => {
+    btn.disabled = true;
+    const label = btn.textContent;
+    btn.textContent = t('update.checking');
+    const r = (await chrome.runtime.sendMessage({ type: 'checkUpdate' })) as {
+      status: string; latest: { version: string; url?: string } | null; installType: string;
+    };
+    if (r.status === 'update_available') {
+      btn.textContent = t('update.applying'); // onUpdateAvailable -> paplašinājums pārlādējas
+      return;
+    }
+    if (r.latest && r.installType !== 'normal' && r.installType !== 'admin') {
+      // Instalēts ne no veikala (piem., no GitHub) – atveram lejupielādes lapu
+      chrome.tabs.create({ url: r.latest.url ?? `https://github.com/Jazekss/URLguard/releases` });
+      if (msgEl) {
+        msgEl.hidden = false;
+        msgEl.textContent = t('update.manual');
+      }
+      btn.textContent = label;
+      btn.disabled = false;
+      return;
+    }
+    btn.textContent = r.latest ? label : t('update.none');
+    btn.disabled = !!r.latest ? false : true;
+  };
+  $<HTMLButtonElement>('checkUpdate').onclick = () => run($<HTMLButtonElement>('checkUpdate'));
+  if (u.latest) {
+    $('updateBox').hidden = false;
+    $('updateTitle').textContent = t('update.available', { version: u.latest.version });
+    $<HTMLButtonElement>('updateBtn').onclick = () => run($<HTMLButtonElement>('updateBtn'), $('updateMsg'));
+  }
+}
+
 async function initSettings(s: Settings) {
+  // Firefox: ikona pārlūka tēmas akcenta krāsā (Chromium pārlūki tēmas krāsas paplašinājumiem nedod)
+  if (TARGET === 'firefox') {
+    $('accentRow').hidden = false;
+    const ac = $<HTMLInputElement>('accentIcon');
+    ac.checked = !!s.accentIcon;
+    ac.onchange = () => saveSettings({ accentIcon: ac.checked });
+  }
+
   // Valoda: maiņa uzreiz pārzīmē popup
   const langSel = $<HTMLSelectElement>('lang');
   for (const [code, name] of Object.entries(LANGS)) langSel.add(new Option(name, code));
@@ -262,6 +308,7 @@ async function main() {
   renderLog(st.log);
   renderData(st.data);
   initSites(settings, url);
+  initUpdates(st.update);
   await initSettings(settings);
   await initReport(url, settings);
 }

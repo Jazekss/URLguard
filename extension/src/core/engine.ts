@@ -84,6 +84,8 @@ export class Engine {
   private officialSuffixes = new Map<string, Set<string>>();
   private anyTld = new Map<string, Brand>();
   private brandWords = new Map<string, Set<string>>();
+  /** Oficiālie domēni pēc pirmā vārda ("swedbank" -> swedbank.lv, swedbank.com…) – ātrai iestrādātā domēna pārbaudei. */
+  private officialByWord = new Map<string, [string, Brand][]>();
   private allow: Set<string>;
   private block: Set<string>;
   private suspect: Set<string>;
@@ -112,6 +114,13 @@ export class Engine {
       }
     }
     this.officialSet = new Set(this.official.keys());
+    for (const [d, b] of this.official) {
+      if (d.length < 6) continue;
+      const w = d.split('.')[0].split('-')[0];
+      const list = this.officialByWord.get(w) ?? [];
+      list.push([d, b]);
+      this.officialByWord.set(w, list);
+    }
     this.allow = new Set(bundle.allowlist.map((d) => d.toLowerCase()));
     this.block = new Set(bundle.blocklist.domains.map((d) => d.toLowerCase()));
     this.suspect = new Set((bundle.blocklist.suspect ?? []).map((d) => d.toLowerCase()));
@@ -253,8 +262,11 @@ export class Engine {
       if (s > 0) consider({ brand: e.brand, score: s, code });
     }
     // Iestrādāts oficiālais domēns: "swedbank.lv-secure.com", "eveseliba.gov.lv.abc.xyz"
-    for (const [offDomain, b] of this.official) {
-      if (offDomain.length >= 6 && embeds(hostPlain, offDomain, this.brandWords.get(b.id)!, !!b.weak)) consider({ brand: b, score: 75, code: 'official-embedded' });
+    // Tikai tie oficiālie domēni, kuru pirmais vārds ir adresē (indekss – ātrums nav atkarīgs no bāzes lieluma)
+    for (const w of new Set(hostPlain.split(/[.-]/))) {
+      for (const [offDomain, b] of this.officialByWord.get(w) ?? []) {
+        if (embeds(hostPlain, offDomain, this.brandWords.get(b.id)!, !!b.weak)) consider({ brand: b, score: 75, code: 'official-embedded' });
+      }
     }
 
     let score = 0;

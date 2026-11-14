@@ -2,6 +2,7 @@ import { Engine } from './core/engine';
 import { SCHEMA_VERSION, type Bundle, type CheckResult, type Verdict } from './core/types';
 import { verifyBundle } from './core/signature';
 import { initLang, t } from './i18n';
+import { iconImages, type IconState } from './icon';
 import { BUNDLE_URLS, DATA_REPO, PUBLIC_KEY_B64, STATS_ENDPOINT, TARGET, UPDATE_PERIOD_MIN } from './config';
 import { cleanUrl, EMPTY_STATS, getSettings, isSiteDisabled, type LogEntry, type SerpItemIn, type SerpItemOut, type StatCounts } from './shared';
 
@@ -183,11 +184,53 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 // ---------------------------------------------------------------- UI palīgi
-function setBadge(tabId: number, r: CheckResult) {
-  const text = r.verdict === 'suspicious' ? '!' : r.verdict === 'danger' ? '✕' : r.verdict === 'official' ? '✓' : '';
-  const color = r.verdict === 'official' ? '#15803d' : r.verdict === 'danger' ? '#b91c1c' : '#b45309';
-  chrome.action.setBadgeText({ tabId, text }).catch(() => {});
-  if (text) chrome.action.setBadgeBackgroundColor({ tabId, color }).catch(() => {});
+// ---------------------------------------------------------------- rīkjoslas ikona
+let accent: string | null = null; // Firefox tēmas akcenta krāsa (ja iestatījumos ieslēgts)
+
+/** Firefox: pārlūka tēmas akcenta krāsa. Chromium pārlūki tēmas krāsas paplašinājumiem nedod. */
+async function loadAccent() {
+  accent = null;
+  const s = await getSettings();
+  const theme = (globalThis as unknown as { browser?: { theme?: { getCurrent(): Promise<{ colors?: Record<string, unknown> }> } } }).browser?.theme;
+  if (!s.accentIcon || TARGET !== 'firefox' || !theme) return;
+  try {
+    const c = (await theme.getCurrent()).colors ?? {};
+    const pick = [c.tab_line, c.icons_attention, c.toolbar_field_highlight, c.accentcolor].find((x) => typeof x === 'string' && x);
+    accent = (pick as string | undefined) ?? null;
+  } catch {
+    accent = null;
+  }
+}
+
+function paint(tabId: number | undefined, state: IconState) {
+  const imageData = iconImages(state, state === 'ok' && accent ? accent : undefined);
+  if (imageData) chrome.action.setIcon(tabId == null ? { imageData } : { tabId, imageData }).catch(() => {});
+  const title = `URLguard – ${t(`icon.${state}`)}`;
+  chrome.action.setTitle(tabId == null ? { title } : { tabId, title }).catch(() => {});
+}
+
+function stateOf(r: CheckResult | undefined, disabled: boolean): IconState {
+  if (disabled) return 'off';
+  return r?.verdict === 'danger' ? 'danger' : r?.verdict === 'suspicious' ? 'warn' : 'ok';
+}
+
+/** Cilnes ikona pēc pārbaudes rezultāta. */
+function setBadge(tabId: number, r: CheckResult, disabled = false) {
+  paint(tabId, stateOf(r, disabled));
+}
+
+/** Kopējā ikona (zaļa / pelēka) un visas atvērtās cilnes – pēc iestatījumu maiņas. */
+async function refreshIcons() {
+  await initLang();
+  await loadAccent();
+  const s = await getSettings();
+  paint(undefined, s.enabled ? 'ok' : 'off');
+  const tabs = await chrome.tabs.query({}).catch(() => [] as chrome.tabs.Tab[]);
+  for (const tab of tabs) {
+    if (tab.id == null) continue;
+    const st = await getTabState(tab.id);
+    paint(tab.id, stateOf(st?.result, !s.enabled || (!!st && isSiteDisabled(s, st.result.host))));
+  }
 }
 
 async function showWarning(tabId: number, r: CheckResult) {
@@ -232,7 +275,7 @@ async function onMainFrame(tabId: number, url: string, requestId?: string) {
   if (!settings.enabled) return;
   const lc = contextFor(requestId, url);
   if (isSiteDisabled(settings, new URL(url).hostname)) {
-    chrome.action.setBadgeText({ tabId, text: '' }).catch(() => {});
+    paint(tabId, 'off');
     return;
   }
   const engine = await getEngine();
@@ -274,6 +317,7 @@ type Msg =
   | { type: 'getBrands' }
   | { type: 'openReport'; url: string; kind?: 'phishing' | 'false_positive' }
   | { type: 'reportSent' }
+  | { type: 'checkUpdate' }
   | { type: 'linkContext'; url: string; raw: string; context: string; anchor: string; from: string }
   | { type: 'contextCheck'; items: { key: string; url: string; context: string; anchor: string }[] };
 
@@ -379,7 +423,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     }
     case 'getStatus': {
       const engine = await getEngine();
-      const { lastUpdateCheck, log = [] } = await chrome.storage.local.get(['lastUpdateCheck', 'log']);
+      const { lastUpdateCheck, log = [], latestRelease } = await chrome.storage.local.get(['lastUpdateCheck', 'log', 'latestRelease']);
       return {
         result: msg.url ? await statusFor(engine, msg.url, msg.tabId) : null,
         data: {
@@ -390,10 +434,27 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
           repoConfigured: !!DATA_REPO && !DATA_REPO.includes('OWNER'),
         },
         log,
+        update: { current: chrome.runtime.getManifest().version, latest: latestRelease ?? null, installType: await installType() },
       };
     }
     case 'updateNow':
       return updateBundle();
+    case 'checkUpdate': {
+      const type = await installType();
+      let status = 'unsupported';
+      if (type === 'normal' || type === 'admin') {
+        // No veikala: pārlūks lejupielādē; onUpdateAvailable to uzreiz piemēro
+        try {
+          const r = (await chrome.runtime.requestUpdateCheck()) as unknown as { status: string } | string;
+          status = typeof r === 'string' ? r : r.status;
+        } catch (e) {
+          status = 'error';
+        }
+      }
+      await checkLatestRelease();
+      const { latestRelease } = await chrome.storage.local.get('latestRelease');
+      return { status, installType: type, latest: latestRelease ?? null, current: chrome.runtime.getManifest().version };
+    }
     case 'reportSent':
       await countStat('reports');
       return true;
@@ -419,6 +480,42 @@ chrome.contextMenus.onClicked.addListener((info) => {
   openWindow(`popup.html?u=${encodeURIComponent(url)}${report ? '&report=1' : ''}`);
 });
 
+// ---------------------------------------------------------------- paplašinājuma atjauninājumi
+// Veikala versijas pārlūks atjaunina pats; mēs jauno versiju piemērojam UZREIZ (negaidot pārlūka restartu).
+chrome.runtime.onUpdateAvailable.addListener(() => chrome.runtime.reload());
+
+function newer(a: string, b: string): boolean {
+  const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) > (pb[i] ?? 0);
+  return false;
+}
+
+/** Publicētā jaunākā versija (GitHub Releases). Ja jaunāka – ikonai "!" un paziņojums popup logā. */
+async function checkLatestRelease() {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${DATA_REPO}/releases/latest`, { headers: { accept: 'application/vnd.github+json' } });
+    if (!res.ok) return;
+    const j = (await res.json()) as { tag_name?: string; html_url?: string };
+    const version = (j.tag_name ?? '').replace(/^v/, '');
+    if (!/^\d+\.\d+\.\d+$/.test(version)) return;
+    const current = chrome.runtime.getManifest().version;
+    const available = newer(version, current) ? { version, url: j.html_url } : null;
+    await chrome.storage.local.set({ latestRelease: available });
+    chrome.action.setBadgeText({ text: available ? '!' : '' }).catch(() => {});
+    if (available) chrome.action.setBadgeBackgroundColor({ color: '#1d5fd1' }).catch(() => {});
+  } catch {
+    /* tīkla kļūda – mēģināsim vēlāk */
+  }
+}
+
+async function installType(): Promise<string> {
+  try {
+    return (await chrome.management.getSelf()).installType ?? 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
 // ---------------------------------------------------------------- dzīves cikls
 /** Labā klikšķa izvēlne lietotāja valodā (pārveido, mainot valodu iestatījumos). */
 async function createMenus() {
@@ -432,16 +529,21 @@ chrome.storage.onChanged.addListener((changes, area) => {
   const oldLang = (changes.settings?.oldValue as { lang?: string } | undefined)?.lang;
   const newLang = (changes.settings?.newValue as { lang?: string } | undefined)?.lang;
   if (area === 'sync' && changes.settings && oldLang !== newLang) createMenus().catch(() => {});
+  if (area === 'sync' && changes.settings) refreshIcons().catch(() => {});
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
   await createMenus();
   chrome.alarms.create('bundle-update', { periodInMinutes: UPDATE_PERIOD_MIN, delayInMinutes: 1 });
   ensureStatsAlarm();
+  refreshIcons().catch(() => {});
+  checkLatestRelease();
   await getEngine();
 });
 
 chrome.runtime.onStartup.addListener(() => {
+  refreshIcons().catch(() => {});
+  checkLatestRelease();
   chrome.alarms.get('bundle-update', (a) => {
     if (!a) chrome.alarms.create('bundle-update', { periodInMinutes: UPDATE_PERIOD_MIN, delayInMinutes: 1 });
   });
@@ -449,6 +551,9 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.alarms.onAlarm.addListener((a) => {
-  if (a.name === 'bundle-update') updateBundle().then((r) => console.log('URLguard bāze:', r));
+  if (a.name === 'bundle-update') {
+    updateBundle().then((r) => console.log('URLguard bāze:', r));
+    checkLatestRelease();
+  }
   if (a.name === 'stats-send') sendStats();
 });

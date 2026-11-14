@@ -109,5 +109,19 @@
   "settings.noDisabled": "Nėra",
   "settings.remove": "Vėl įjungti",
   "social.shortener": "Sutrumpinta nuoroda – URLguard patikrins paskirties adresą ją atidarius.",
-  "social.mismatch": "nuoroda neveda į oficialią {brand} svetainę"
+  "social.mismatch": "nuoroda neveda į oficialią {brand} svetainę",
+  "icon.ok": "apsauga įjungta",
+  "icon.off": "išjungta",
+  "icon.warn": "įtartinas puslapis",
+  "icon.danger": "pavojingas puslapis",
+  "update.available": "Yra nauja versija {version}",
+  "update.why": "Atnaujinkite, kad apsauga būtų visiška.",
+  "update.install": "Atnaujinti",
+  "update.check": "Tikrinti naujinius",
+  "update.checking": "Tikrinama…",
+  "update.none": "Naujausia versija ✓",
+  "update.applying": "Atnaujinama – plėtinys trumpam persikraus",
+  "update.manual": "Atidarytas atsisiuntimo puslapis – įdiekite naują versiją",
+  "settings.version": "Versija {version}",
+  "settings.accentIcon": "Piktograma naršyklės akcento spalva"
 }

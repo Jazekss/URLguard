@@ -109,5 +109,19 @@
   "settings.noDisabled": "Нет",
   "settings.remove": "Включить снова",
   "social.shortener": "Сокращённая ссылка – URLguard проверит адрес назначения при открытии.",
-  "social.mismatch": "ссылка не ведёт на официальный сайт {brand}"
+  "social.mismatch": "ссылка не ведёт на официальный сайт {brand}",
+  "icon.ok": "защита включена",
+  "icon.off": "отключено",
+  "icon.warn": "подозрительная страница",
+  "icon.danger": "опасная страница",
+  "update.available": "Доступна новая версия {version}",
+  "update.why": "Обновите, чтобы защита была полной.",
+  "update.install": "Обновить",
+  "update.check": "Проверить обновления",
+  "update.checking": "Проверка…",
+  "update.none": "Последняя версия ✓",
+  "update.applying": "Обновление – расширение ненадолго перезапустится",
+  "update.manual": "Открыта страница загрузки – установите новую версию",
+  "settings.version": "Версия {version}",
+  "settings.accentIcon": "Значок в акцентном цвете браузера"
 }

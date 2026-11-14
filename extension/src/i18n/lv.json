@@ -109,5 +109,19 @@
   "settings.noDisabled": "Nav",
   "settings.remove": "Ieslēgt atkal",
   "social.shortener": "Saīsināta saite – URLguard pārbaudīs galamērķi, kad to atvērsiet.",
-  "social.mismatch": "saite neved uz {brand} oficiālo lapu"
+  "social.mismatch": "saite neved uz {brand} oficiālo lapu",
+  "icon.ok": "aizsardzība ieslēgta",
+  "icon.off": "izslēgts",
+  "icon.warn": "aizdomīga lapa",
+  "icon.danger": "bīstama lapa",
+  "update.available": "Pieejama jaunā versija {version}",
+  "update.why": "Atjauniniet, lai aizsardzība būtu pilnīga.",
+  "update.install": "Atjaunināt",
+  "update.check": "Pārbaudīt atjauninājumus",
+  "update.checking": "Pārbauda…",
+  "update.none": "Jaunākā versija ✓",
+  "update.applying": "Atjaunina – paplašinājums uz brīdi pārlādēsies",
+  "update.manual": "Atvērta lejupielādes lapa – instalējiet jauno versiju",
+  "settings.version": "Versija {version}",
+  "settings.accentIcon": "Ikona pārlūka akcenta krāsā"
 }

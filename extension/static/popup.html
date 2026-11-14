@@ -37,6 +37,8 @@
     .msg.err { background: var(--danger-bg); color: var(--danger); }
     details summary { cursor: pointer; font-weight: 600; }
     .settings { display: grid; gap: 8px; margin-top: 10px; }
+    .update { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+    .update p { margin: 4px 0 10px; }
     .consent { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
     .consent p { margin: 6px 0 10px; }
     .row-btns { display: flex; gap: 8px; }
@@ -53,6 +55,13 @@
     <label class="switch"><input type="checkbox" id="enabled"> <span data-i18n="popup.protection"></span></label>
   </header>
   <main>
+    <section class="card update" id="updateBox" hidden>
+      <b id="updateTitle"></b>
+      <p class="small" data-i18n="update.why"></p>
+      <button type="button" class="primary" id="updateBtn" data-i18n="update.install"></button>
+      <div class="small muted" id="updateMsg" hidden></div>
+    </section>
+
     <section class="card consent" id="consent" hidden>
       <b data-i18n="consent.title"></b>
       <p class="small"><span data-i18n="consent.text"></span>
@@ -110,6 +119,7 @@
           <label class="row"><input type="checkbox" id="serpOfficialBadge"> <span data-i18n="settings.officialBadge"></span></label>
           <label class="row"><input type="checkbox" id="pageChecks"> <span data-i18n="settings.pageChecks"></span></label>
           <label class="row"><input type="checkbox" id="shareStats"> <span data-i18n="settings.stats"></span></label>
+          <label class="row" id="accentRow" hidden><input type="checkbox" id="accentIcon"> <span data-i18n="settings.accentIcon"></span></label>
           <div class="small"><span data-i18n="settings.disabledSites"></span>
             <ul class="sites" id="disabledList"></ul>
           </div>
@@ -119,6 +129,10 @@
           <div class="footer small">
             <span class="muted" id="dataInfo"></span>
             <button type="button" id="updateNow" data-i18n="settings.update"></button>
+          </div>
+          <div class="footer small">
+            <span class="muted" id="versionInfo"></span>
+            <button type="button" id="checkUpdate" data-i18n="update.check"></button>
           </div>
           <button type="button" id="grant" hidden data-i18n="settings.grant"></button>
         </div>

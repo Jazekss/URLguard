@@ -109,5 +109,19 @@
   "settings.noDisabled": "Puuduvad",
   "settings.remove": "Lülita uuesti sisse",
   "social.shortener": "Lühendatud link – URLguard kontrollib sihtkohta, kui selle avad.",
-  "social.mismatch": "link ei vii {brand} ametlikule lehele"
+  "social.mismatch": "link ei vii {brand} ametlikule lehele",
+  "icon.ok": "kaitse sees",
+  "icon.off": "välja lülitatud",
+  "icon.warn": "kahtlane leht",
+  "icon.danger": "ohtlik leht",
+  "update.available": "Saadaval on uus versioon {version}",
+  "update.why": "Uuenda, et kaitse oleks täielik.",
+  "update.install": "Uuenda",
+  "update.check": "Otsi uuendusi",
+  "update.checking": "Kontrollin…",
+  "update.none": "Uusim versioon ✓",
+  "update.applying": "Uuendan – laiendus taaskäivitub hetkeks",
+  "update.manual": "Avati allalaadimisleht – paigalda uus versioon",
+  "settings.version": "Versioon {version}",
+  "settings.accentIcon": "Ikoon brauseri rõhuvärvis"
 }

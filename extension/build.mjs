@@ -46,6 +46,7 @@ function manifest(target) {
     m.minimum_chrome_version = '120';
   } else {
     m.background = { scripts: ['background.js'] };
+    m.permissions.push('theme'); // tēmas akcenta krāsa ikonai
     m.browser_specific_settings = {
       gecko: { id: 'urlguard@urlguard.app', strict_min_version: '140.0', data_collection_permissions: { required: ['none'], optional: ['technicalAndInteraction'] } },
       gecko_android: { strict_min_version: '142.0' },

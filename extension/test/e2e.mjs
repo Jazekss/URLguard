@@ -277,6 +277,11 @@ try {
     const brands = await page.$$eval('#rBrand option', (o) => o.length);
     ok('ziņošanas formā zīmolu saraksts', brands > 40);
 
+    // Versija un atjauninājumu pārbaude (testa instalācija nav no veikala -> 'development')
+    const ver = await page.$eval('#versionInfo', (e) => e.textContent).catch(() => '');
+    const upd2 = await page.evaluate(() => chrome.runtime.sendMessage({ type: 'checkUpdate' }));
+    ok('versija un atjauninājumu pārbaude', /\d+\.\d+\.\d+/.test(ver) && upd2.current && upd2.installType !== 'normal', `${ver} | ${upd2.installType} | ${upd2.status}`);
+
     // Valodas maiņa: krievu un angļu, tad atpakaļ latviešu
     const u = `${BASE}/popup.html?u=${encodeURIComponent('https://swedbank.top/ib')}`;
     for (const [code, expectVerdict, expectReason] of [

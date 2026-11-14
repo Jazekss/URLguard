@@ -109,5 +109,19 @@
   "settings.noDisabled": "None",
   "settings.remove": "Turn back on",
   "social.shortener": "Shortened link – URLguard will check the destination when you open it.",
-  "social.mismatch": "the link does not lead to the official {brand} site"
+  "social.mismatch": "the link does not lead to the official {brand} site",
+  "icon.ok": "protection on",
+  "icon.off": "turned off",
+  "icon.warn": "suspicious page",
+  "icon.danger": "dangerous page",
+  "update.available": "New version {version} is available",
+  "update.why": "Update to stay fully protected.",
+  "update.install": "Update",
+  "update.check": "Check for updates",
+  "update.checking": "Checking…",
+  "update.none": "Up to date ✓",
+  "update.applying": "Updating – the extension will restart for a moment",
+  "update.manual": "Download page opened – install the new version",
+  "settings.version": "Version {version}",
+  "settings.accentIcon": "Icon in the browser accent colour"
 }

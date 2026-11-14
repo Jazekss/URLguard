@@ -14,6 +14,7 @@ Visas pārbaudes notiek **lokāli**. Saites netiek sūtītas uz serveri, izņemo
 | Lapas saturs | Pieslēgšanās forma, Smart-ID vai personas koda lauks uz līdzīga domēna. Šādu lapu uzskata par bīstamu |
 | Soc. tīkli un saīsinātās saites | Kad uzklikšķina uz saites, URLguard atceras, no kāda ieraksta tā atvērta ("Lidl izloze…"), un salīdzina to ar galamērķi. Tas strādā arī pēc bit.ly, t.co u.c. pāradresācijām. Facebook, Instagram, X, TikTok, LinkedIn, Reddit un YouTube ierakstos aizdomīgām saitēm pievieno ikonu |
 | Izslēgšana | Pārbaudi var izslēgt visur ("Aizsardzība") vai atsevišķai vietnei (popup logā "Izslēgt šai vietnei"). Izslēgto vietņu saraksts ir iestatījumos |
+| Ikona un atjauninājumi | Rīkjoslas ikona rāda stāvokli: zaļa ✓ (darbojas), pelēka – (izslēgts), oranža ! (aizdomīgs), sarkana ✕ (bīstams); Firefox var izmantot tēmas akcenta krāsu. Veikala versijas atjauninājumu piemēro uzreiz. Ja GitHub ir publicēta jaunāka versija, popup logā parādās paziņojums ar pogu "Atjaunināt" |
 
 Vērtējums: **bīstams** (≥70) nozīmē pilnekrāna brīdinājumu ar pogu "Doties uz oficiālo lapu". **Aizdomīgs** (≥40) nozīmē neuzbāzīgu joslu lapas augšā. Pārējos gadījumos nekas netiek rādīts.
 
