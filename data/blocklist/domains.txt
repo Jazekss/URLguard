@@ -3,3 +3,4 @@
 
 # Testa ieraksts – pārbaudei: http://phishing-test.urlguard.invalid/
 phishing-test.urlguard.invalid
+urlguard-test.invalid  # #2
