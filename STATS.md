@@ -1,6 +1,6 @@
 # URLguard statistika
 
-Atjaunināts: 2026-11-22 12:50 UTC · automātiski katru dienu.
+Atjaunināts: 2026-11-23 15:17 UTC · automātiski katru dienu.
 
 Skaitļi ir tikai no lietotājiem, kuri **paši piekrituši** anonīmai statistikai ([kas tiek sūtīts](PRIVACY.md)),
 tāpēc īstais aizsargāto gadījumu skaits ir lielāks.
