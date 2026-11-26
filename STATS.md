@@ -1,6 +1,6 @@
 # URLguard statistika
 
-Atjaunināts: 2026-11-25 14:52 UTC · automātiski katru dienu.
+Atjaunināts: 2026-11-26 14:22 UTC · automātiski katru dienu.
 
 Skaitļi ir tikai no lietotājiem, kuri **paši piekrituši** anonīmai statistikai ([kas tiek sūtīts](PRIVACY.md)),
 tāpēc īstais aizsargāto gadījumu skaits ir lielāks.
@@ -10,7 +10,7 @@ tāpēc īstais aizsargāto gadījumu skaits ir lielāks.
 | | |
 |---|---:|
 | 🛑 Bloķētas bīstamās lapas | **3** |
-| ⚠️ Brīdinājumi par aizdomīgām lapām | 4 |
+| ⚠️ Brīdinājumi par aizdomīgām lapām | 6 |
 | 🔎 Krāpnieku saites meklētājā (atzīmētas + paslēptas) | 13 |
 | 📨 Lietotāju ziņojumi | 5 |
 
@@ -19,10 +19,10 @@ tāpēc īstais aizsargāto gadījumu skaits ir lielāks.
 | | |
 |---|---:|
 | Bloķētas lapas | 3 |
-| Brīdinājumi | 4 |
+| Brīdinājumi | 6 |
 | Krāpnieku saites meklētājā | 13 |
 | Ziņojumi | 5 |
-| Vidēji aktīvo paplašinājumu dienā (ar statistiku) | 1 |
+| Vidēji aktīvo paplašinājumu dienā (ar statistiku) | 2 |
 
 ## Bāze
 
